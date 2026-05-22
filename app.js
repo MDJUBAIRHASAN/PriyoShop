@@ -21,8 +21,31 @@
     carouselIndex: 0,
     carouselTimer: null,
     onboardingStep: 0,
-    screenHistory: []
+    screenHistory: [],
+    modifyTimer: null,
+    modifyRemaining: 0,
+    orderLocked: false,
+    // Reconciled lines built from lastOrder when retailer taps 1-Tap Reorder.
+    reorderItems: []
   };
+
+  // Modify-after-order window length (faithful 30 min). Use "demo: lock now" link to skip.
+  const MODIFY_WINDOW_SECONDS = 1800;
+
+  // ── 1-Tap Reorder: the retailer's previous order (their weekly pattern) ──
+  // status flags drive the reconciliation screen:
+  //   stock:false      → SKU now out of stock (offer alternative swap)
+  //   oldPrice present → price changed since last order
+  const LAST_ORDER = [
+    { id: 101, name: 'আকিজ এসেনশিয়াল মিনিকেট চাল ২৫ কেজি', weight: '25 kg', price: 1800, qty: 4, image: './images/rice_akij.png', stock: true },
+    { id: 102, name: 'চিনি (ফ্রেশ/তীর/ইগলু) ৫০ কেজি', weight: '50 kg', price: 5050, oldPrice: 4900, qty: 6, image: './images/sugar_bag.png', stock: true },
+    { id: 103, name: 'সয়াবিন তেল ৫ লিটার', weight: '5 L', price: 850, qty: 5, image: './images/oil.png', stock: false,
+      alt: { id: 113, name: 'রূপচাঁদা সয়াবিন তেল ৫ লিটার', weight: '5 L', price: 870, image: './images/oil.png' } },
+    { id: 104, name: 'আমিন আটাশ চাল ২৫ কেজি', weight: '25 kg', price: 1020, qty: 3, image: './images/rice_amin_25.png', stock: true },
+    { id: 105, name: 'আটা ২ কেজি', weight: '2 kg', price: 120, qty: 8, image: './images/flour.png', stock: false,
+      alt: { id: 115, name: 'তীর আটা ২ কেজি', weight: '2 kg', price: 125, image: './images/flour.png' } },
+    { id: 106, name: 'মুসুর ডাল ১ কেজি', weight: '1 kg', price: 140, qty: 6, image: './images/dal.png', stock: true }
+  ];
 
   // ── DOM Ready ──
   document.addEventListener('DOMContentLoaded', init);
@@ -36,6 +59,7 @@
     setupSearch();
     renderCart();
     updateCartBadge();
+    initReorder();
     adjustScale();
     window.addEventListener('resize', adjustScale);
     navigateTo('home');
@@ -100,6 +124,15 @@
 
     if (screenId === 'order-success' || screenId === 'order-success-payment') {
       setTimeout(() => triggerConfetti(screenId), 400);
+    }
+
+    // New order placed → reset the modify window fresh.
+    if (screenId === 'order-success-payment') {
+      state.orderLocked = false;
+    }
+
+    if (screenId === 'order-success') {
+      startModifyWindow();
     }
   }
 
@@ -385,6 +418,7 @@
     renderCheckout();
     renderOrderDetail();
     renderOrderRepeat();
+    renderModifyOrder();
     refreshIcons();
   }
 
@@ -528,6 +562,301 @@
     refreshIcons();
   }
 
+  // ── Modify-After-Order & Checkout Guarantee ──
+
+  // English digits → Bangla numerals (UI uses Bangla numerals throughout).
+  function toBn(value) {
+    const map = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
+    return String(value).replace(/[0-9]/g, d => map[d]);
+  }
+
+  function startModifyWindow() {
+    // Returning to a locked order (e.g. from report-issue) keeps the locked state.
+    if (state.orderLocked) {
+      showGuaranteeState();
+      return;
+    }
+
+    const box = document.getElementById('modify-window-box');
+    const guarantee = document.getElementById('guarantee-box');
+    if (box) box.style.display = 'block';
+    if (guarantee) guarantee.style.display = 'none';
+
+    state.modifyRemaining = MODIFY_WINDOW_SECONDS;
+    updateCountdownLabel();
+
+    if (state.modifyTimer) clearInterval(state.modifyTimer);
+    state.modifyTimer = setInterval(() => {
+      state.modifyRemaining -= 1;
+      if (state.modifyRemaining <= 0) {
+        lockOrder();
+      } else {
+        updateCountdownLabel();
+      }
+    }, 1000);
+  }
+
+  function updateCountdownLabel() {
+    const el = document.getElementById('modify-countdown');
+    if (!el) return;
+    const m = Math.floor(state.modifyRemaining / 60);
+    const s = state.modifyRemaining % 60;
+    el.textContent = toBn(String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'));
+  }
+
+  function lockOrder() {
+    if (state.modifyTimer) {
+      clearInterval(state.modifyTimer);
+      state.modifyTimer = null;
+    }
+    state.orderLocked = true;
+    showGuaranteeState();
+  }
+
+  function showGuaranteeState() {
+    const box = document.getElementById('modify-window-box');
+    const guarantee = document.getElementById('guarantee-box');
+    if (box) box.style.display = 'none';
+    if (guarantee) guarantee.style.display = 'block';
+    refreshIcons();
+  }
+
+  function stopModifyWindow() {
+    if (state.modifyTimer) {
+      clearInterval(state.modifyTimer);
+      state.modifyTimer = null;
+    }
+  }
+
+  function openModifyOrder() {
+    if (state.orderLocked) {
+      showToast('সময় শেষ — অর্ডার লক হয়ে গেছে');
+      return;
+    }
+    renderModifyOrder();
+    navigateTo('modify-order');
+  }
+
+  function renderModifyOrder() {
+    const list = document.getElementById('modify-items-list');
+    if (!list) return;
+
+    if (state.cartItems.length === 0) {
+      list.innerHTML = '<div style="padding:40px 16px;text-align:center;color:var(--text-secondary)">কোনো পণ্য নেই</div>';
+    } else {
+      list.innerHTML = state.cartItems.map(item => `
+        <div class="cart-item" data-id="${item.id}">
+          <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
+            <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          </div>
+          <div class="cart-item-details">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-weight">ওজনঃ ${item.weight} • <span class="cart-item-price">৳${item.price.toLocaleString()}.0</span></div>
+            <div class="cart-item-qty">
+              <div class="qty-selector">
+                <button class="qty-btn" onclick="App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+                <span class="qty-value">${item.qty}</span>
+                <button class="qty-btn" onclick="App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+              </div>
+            </div>
+          </div>
+          <button class="cart-item-delete" onclick="App.removeFromCart(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
+        </div>
+      `).join('');
+    }
+
+    const totals = document.getElementById('modify-totals');
+    if (totals) {
+      const total = getCartTotal();
+      totals.innerHTML = `
+        <div class="modify-total-row total"><span>পরিবর্তিত সর্বমোট</span><span>৳${toBn(total.toLocaleString())}</span></div>
+      `;
+    }
+    refreshIcons();
+  }
+
+  function confirmModify() {
+    showToast('অর্ডার আপডেট হয়েছে');
+    navigateTo('order-success');
+  }
+
+  function cancelOrder() {
+    if (!window.confirm('আপনি কি অর্ডারটি বাতিল করতে চান? কোনো জরিমানা নেই।')) return;
+    stopModifyWindow();
+    showToast('অর্ডার বাতিল হয়েছে');
+    navigateTo('home');
+  }
+
+  function selectIssue(el) {
+    document.querySelectorAll('#screen-report-issue .payment-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function submitReport() {
+    showToast('রিপোর্ট পাঠানো হয়েছে — ২৪ ঘণ্টায় পিকআপ');
+    navigateTo('order-success');
+  }
+
+  // ── 1-Tap Reorder ──
+
+  // Headline numbers for the home card / weekly notification.
+  function reorderSummary() {
+    const totalQty = LAST_ORDER.reduce((s, i) => s + i.qty, 0);
+    const total = LAST_ORDER.reduce((s, i) => s + i.price * i.qty, 0);
+    return { totalQty, total };
+  }
+
+  // Fill home reorder card + notification copy on load (retailers with >=1 past order).
+  function initReorder() {
+    const { totalQty, total } = reorderSummary();
+    const label = toBn(totalQty) + 'টি পণ্য • ৳' + toBn(total.toLocaleString());
+    const cardSummary = document.getElementById('reorder-card-summary');
+    if (cardSummary) cardSummary.textContent = label;
+    const notifSummary = document.getElementById('reorder-notif-summary');
+    if (notifSummary) notifSummary.textContent = label;
+  }
+
+  // Tap → clone last order into reconciliation state, open review screen.
+  function startReorder() {
+    state.reorderItems = LAST_ORDER.map(i => ({ ...i, swapped: false }));
+    renderReorderReview();
+    navigateTo('reorder-review');
+  }
+
+  function renderReorderReview() {
+    const list = document.getElementById('reorder-review-items');
+    if (!list) return;
+
+    const outOfStock = state.reorderItems.filter(i => !i.stock && !i.swapped).length;
+    const priceChanged = state.reorderItems.filter(i => i.oldPrice).length;
+
+    // Issue banner
+    const banner = document.getElementById('reorder-issue-banner');
+    if (banner) {
+      if (outOfStock === 0 && priceChanged === 0) {
+        banner.style.display = 'none';
+      } else {
+        banner.style.display = 'flex';
+        const parts = [];
+        if (outOfStock) parts.push(toBn(outOfStock) + 'টি পণ্য স্টকে নেই');
+        if (priceChanged) parts.push(toBn(priceChanged) + 'টির দাম বদলেছে');
+        const txt = document.getElementById('reorder-issue-text');
+        if (txt) txt.textContent = parts.join(' • ') + '। নিচে দেখে নিন।';
+      }
+    }
+
+    list.innerHTML = state.reorderItems.map(item => {
+      const unavailable = !item.stock && !item.swapped;
+      const priceBadge = item.oldPrice
+        ? `<span class="reorder-badge price">দাম বেড়েছে: ৳${toBn(item.oldPrice.toLocaleString())} → ৳${toBn(item.price.toLocaleString())}</span>`
+        : '';
+
+      if (unavailable) {
+        const swapBtn = item.alt
+          ? `<button class="reorder-swap-btn" onclick="App.swapAlternative(${item.id})"><i data-lucide="repeat" style="width:13px;height:13px;pointer-events:none"></i> বিকল্প নিন (${item.alt.name})</button>`
+          : '';
+        return `
+          <div class="reorder-item out-of-stock" data-id="${item.id}">
+            <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
+              <img src="${item.image}" style="width:100%;height:100%;object-fit:cover;opacity:.5" alt="">
+            </div>
+            <div class="reorder-item-details">
+              <div class="cart-item-name">${item.name}</div>
+              <span class="reorder-badge oos">স্টকে নেই</span>
+              ${swapBtn}
+            </div>
+            <button class="cart-item-delete" onclick="App.removeReorderItem(${item.id})"><i data-lucide="x" style="width:16px;height:16px;pointer-events:none"></i></button>
+          </div>`;
+      }
+
+      return `
+        <div class="reorder-item" data-id="${item.id}">
+          <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
+            <img src="${item.image}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          </div>
+          <div class="reorder-item-details">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-weight">ওজনঃ ${item.weight} • <span class="cart-item-price">৳${toBn(item.price.toLocaleString())}</span></div>
+            ${priceBadge}
+            ${item.swapped ? '<span class="reorder-badge swapped">বিকল্প যোগ হয়েছে</span>' : ''}
+            <div class="cart-item-qty">
+              <div class="qty-selector">
+                <button class="qty-btn" onclick="App.reorderChangeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+                <span class="qty-value">${toBn(item.qty)}</span>
+                <button class="qty-btn" onclick="App.reorderChangeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+              </div>
+            </div>
+          </div>
+          <button class="cart-item-delete" onclick="App.removeReorderItem(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
+        </div>`;
+    }).join('');
+
+    const total = state.reorderItems
+      .filter(i => i.stock || i.swapped)
+      .reduce((s, i) => s + i.price * i.qty, 0);
+    const totals = document.getElementById('reorder-review-total');
+    if (totals) {
+      totals.innerHTML = `<div class="modify-total-row total"><span>মোট</span><span>৳${toBn(total.toLocaleString())}</span></div>`;
+    }
+    refreshIcons();
+  }
+
+  function reorderChangeQty(id, delta) {
+    const item = state.reorderItems.find(i => i.id === id);
+    if (item) {
+      item.qty = Math.max(1, item.qty + delta);
+      renderReorderReview();
+    }
+  }
+
+  function swapAlternative(id) {
+    const item = state.reorderItems.find(i => i.id === id);
+    if (item && item.alt) {
+      item.name = item.alt.name;
+      item.weight = item.alt.weight;
+      item.price = item.alt.price;
+      item.image = item.alt.image;
+      item.stock = true;
+      item.swapped = true;
+      delete item.oldPrice;
+      renderReorderReview();
+      showToast('বিকল্প পণ্য যোগ হয়েছে');
+    }
+  }
+
+  function removeReorderItem(id) {
+    state.reorderItems = state.reorderItems.filter(i => i.id !== id);
+    renderReorderReview();
+  }
+
+  // Accept reconciliation → load available lines into cart → checkout.
+  function proceedReorderCheckout() {
+    const available = state.reorderItems.filter(i => i.stock || i.swapped);
+    if (available.length === 0) {
+      showToast('কোনো পণ্য নেই');
+      return;
+    }
+    state.cartItems = available.map(i => ({
+      id: i.id, name: i.name, nameEn: i.name, weight: i.weight, price: i.price, qty: i.qty, image: i.image
+    }));
+    renderCart();
+    navigateTo('checkout');
+  }
+
+  // Reusable toast (generalized from showAddedToast).
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; z-index: 9999; animation: fade-in 0.3s ease;
+      font-family: 'Noto Sans Bengali', sans-serif; max-width: 90%; text-align: center;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+
   // ── FAQ Accordion ──
   function setupFAQ() {
     document.querySelectorAll('.faq-question').forEach(btn => {
@@ -619,7 +948,18 @@
     openBottomSheet,
     closeBottomSheet,
     toggleDrawer,
-    closeDrawer
+    closeDrawer,
+    openModifyOrder,
+    confirmModify,
+    cancelOrder,
+    lockOrder,
+    selectIssue,
+    submitReport,
+    startReorder,
+    reorderChangeQty,
+    swapAlternative,
+    removeReorderItem,
+    proceedReorderCheckout
   };
 
 })();
