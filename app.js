@@ -22,11 +22,14 @@
     carouselTimer: null,
     onboardingStep: 0,
     screenHistory: [],
-    modifyTimer: null,
-    modifyRemaining: 0,
-    orderLocked: false,
+    // App-wide editable-order window (persisted), shared across all screens.
+    editableOrder: { active: false, expiresAt: 0, status: 'editable' },
+    editableTicker: null,
+    deliveryNote: '',
     // Reconciled lines built from lastOrder when retailer taps 1-Tap Reorder.
     reorderItems: [],
+    // Voice ordering (Idea 1).
+    voice: { permission: false, items: [], transcript: '' },
     // App-exclusive reward system (Idea 8).
     rewards: {
       points: 2340,
@@ -52,6 +55,50 @@
     { name: 'Gold',     bn: 'গোল্ড',     min: 4000,  benefit: '২% ক্যাশব্যাক + ফ্রি ডেলিভারি' },
     { name: 'Platinum', bn: 'প্ল্যাটিনাম', min: 10000, benefit: '৩% ক্যাশব্যাক + অগ্রাধিকার সাপোর্ট' }
   ];
+
+  // ── Voice ordering (Idea 1) ──
+  // Category keywords incl. dialect/colloquial + romanized variants.
+  const VOICE_CATEGORY_KEYS = {
+    oil:   ['তেল', 'সয়াবিন', 'tel', 'oil', 'soyabin'],
+    sugar: ['চিনি', 'sugar', 'cini', 'chini'],
+    rice:  ['চাল', 'মিনিকেট', 'rice', 'chal', 'chaul'],
+    dal:   ['ডাল', 'dal', 'dail'],
+    flour: ['আটা', 'ময়দা', 'ata', 'flour', 'moyda'],
+    ajino: ['আজিনোমতো', 'ajinomoto', 'টেস্টিং সল্ট']
+  };
+
+  // brand keys narrow within a category; "মুসুর/মসুর" intentionally maps to 2 dals (low-confidence demo).
+  const VOICE_CATALOG = [
+    { id: 300, name: 'রূপচাঁদা সয়াবিন তেল ৫ লিটার', nameEn: 'Rupchanda Soybean Oil 5L', weight: '5 Liter', price: 800, image: './images/oil.png', cat: 'oil', brandKeys: ['রূপচাঁদা', 'rupchanda'] },
+    { id: 301, name: 'তীর সয়াবিন তেল ৫ লিটার', nameEn: 'Teer Soybean Oil 5L', weight: '5 Liter', price: 790, image: './images/oil.png', cat: 'oil', brandKeys: ['তীর', 'teer'] },
+    { id: 303, name: 'পুষ্টি সয়াবিন তেল ৫ লিটার', nameEn: 'Pusti Soybean Oil 5L', weight: '5 Liter', price: 780, image: './images/oil.png', cat: 'oil', brandKeys: ['পুষ্টি', 'pusti'] },
+    { id: 100, name: 'ফ্রেশ চিনি ৫০ কেজি', nameEn: 'Fresh Sugar 50kg', weight: '50 kg', price: 5050, image: './images/sugar_fresh.png', cat: 'sugar', brandKeys: ['ফ্রেশ', 'fresh'] },
+    { id: 101, name: 'তীর চিনি ৫০ কেজি', nameEn: 'Teer Sugar 50kg', weight: '50 kg', price: 5060, image: './images/sugar_teer.png', cat: 'sugar', brandKeys: ['তীর', 'teer'] },
+    { id: 102, name: 'ইগলু চিনি ৫০ কেজি', nameEn: 'Igloo Sugar 50kg', weight: '50 kg', price: 5040, image: './images/sugar_igloo.png', cat: 'sugar', brandKeys: ['ইগলু', 'igloo'] },
+    { id: 5,  name: 'আকিজ এসেনশিয়াল মিনিকেট চাল ২৫ কেজি', nameEn: 'Akij Miniket Rice 25kg', weight: '25 kg', price: 1800, image: './images/rice_akij.png', cat: 'rice', brandKeys: ['আকিজ', 'akij'] },
+    { id: 7,  name: 'আমিন আটাশ চাল ২৫ কেজি', nameEn: 'Amin Athash Rice 25kg', weight: '25 kg', price: 1020, image: './images/rice_amin_25.png', cat: 'rice', brandKeys: ['আমিন', 'amin'] },
+    { id: 11, name: 'নজরুল মিনিকেট চাল ২৫ কেজি', nameEn: 'Nazrul Miniket Rice 25kg', weight: '25 kg', price: 1500, image: './images/rice_nazrul.png', cat: 'rice', brandKeys: ['নজরুল', 'nazrul'] },
+    { id: 200, name: 'দেশি মসুর ডাল ২৫ কেজি', nameEn: 'Local Masoor Dal 25kg', weight: '25 kg', price: 2500, image: './images/dal.png', cat: 'dal', brandKeys: ['দেশি', 'মসুর', 'মুসুর', 'desi', 'masoor'] },
+    { id: 201, name: 'নেপালি মসুর ডাল ২৫ কেজি', nameEn: 'Nepali Masoor Dal 25kg', weight: '25 kg', price: 2800, image: './images/dal.png', cat: 'dal', brandKeys: ['নেপালি', 'মসুর', 'মুসুর', 'nepali', 'masoor'] },
+    { id: 202, name: 'মুগ ডাল ২৫ কেজি', nameEn: 'Moong Dal 25kg', weight: '25 kg', price: 3000, image: './images/dal.png', cat: 'dal', brandKeys: ['মুগ', 'moong', 'mug'] },
+    { id: 400, name: 'তীর আটা ৫০ কেজি', nameEn: 'Teer Ata 50kg', weight: '50 kg', price: 1800, image: './images/flour.png', cat: 'flour', brandKeys: ['তীর', 'teer'] },
+    { id: 401, name: 'ফ্রেশ আটা ৫০ কেজি', nameEn: 'Fresh Ata 50kg', weight: '50 kg', price: 1790, image: './images/flour.png', cat: 'flour', brandKeys: ['ফ্রেশ', 'fresh'] },
+    { id: 600, name: 'আজিনোমতো ১ কেজি', nameEn: 'Ajinomoto 1kg', weight: '1 kg', price: 250, image: './images/ajinomoto.png', imgFilter: '', cat: 'ajino', brandKeys: ['আজিনোমতো', 'ajinomoto', 'আজিনা', 'ajina'] },
+    { id: 601, name: 'থাই আজিনোমতো ১ কেজি', nameEn: 'Thai Ajinomoto 1kg', weight: '1 kg', price: 280, image: './images/ajinomoto.png', imgFilter: 'hue-rotate(120deg)', cat: 'ajino', brandKeys: ['থাই', 'thai'] },
+    { id: 602, name: 'চাইনিজ আজিনোমতো ১ কেজি', nameEn: 'Chinese Ajinomoto 1kg', weight: '1 kg', price: 200, image: './images/ajinomoto.png', imgFilter: 'hue-rotate(240deg)', cat: 'ajino', brandKeys: ['চাইনিজ', 'chinese'] },
+    { id: 603, name: 'মেলা আজিনোমতো ১ কেজি', nameEn: 'Mela Ajinomoto 1kg', weight: '1 kg', price: 220, image: './images/ajinomoto.png', imgFilter: 'invert(0.1) saturate(2)', cat: 'ajino', brandKeys: ['মেলা', 'mela'] }
+  ];
+
+  // Bangla/English number words + Bangla digits → integer.
+  const QTY_WORDS = {
+    'এক': 1, '১': 1, 'one': 1, 'ek': 1,
+    'দুই': 2, 'দুটা': 2, 'দুইটা': 2, 'দুদা': 2, 'দুটো': 2, '২': 2, 'two': 2, 'dui': 2,
+    'তিন': 3, '৩': 3, 'three': 3, 'tin': 3,
+    'চার': 4, '৪': 4, 'four': 4, 'char': 4,
+    'পাঁচ': 5, 'পাচ': 5, '৫': 5, 'five': 5, 'pach': 5,
+    'ছয়': 6, '৬': 6, 'six': 6,
+    'সাত': 7, '৭': 7, 'আট': 8, '৮': 8, 'নয়': 9, '৯': 9, 'দশ': 10, '১০': 10
+  };
 
   // ── 1-Tap Reorder: the retailer's previous order (their weekly pattern) ──
   // status flags drive the reconciliation screen:
@@ -83,6 +130,9 @@
     initReorder();
     renderRewards();
     localizeNumerals();
+    loadEditableOrder();
+    renderEditableSurfaces();
+    startEditableTicker();
     adjustScale();
     window.addEventListener('resize', adjustScale);
     navigateTo('home');
@@ -149,9 +199,9 @@
       setTimeout(() => triggerConfetti(screenId), 400);
     }
 
-    // New order placed → reset the modify window fresh + award reward points.
+    // New order placed → open a fresh 30-min editable window + award reward points.
     if (screenId === 'order-success-payment') {
-      state.orderLocked = false;
+      createEditableOrder();
       awardPointsForOrder();
     }
 
@@ -164,6 +214,9 @@
         state.rewards.tierJustUpgraded = null;
       }
     }
+
+    // Repaint editable surfaces so the Home pill shows/hides immediately.
+    renderEditableSurfaces();
   }
 
   function goBack() {
@@ -431,9 +484,9 @@
     if (!cartList) return;
 
     cartList.innerHTML = state.cartItems.map(item => `
-      <div class="cart-item" data-id="${item.id}">
+      <div class="cart-item" data-id="${item.id}" onclick="App.openCartItemDetail(${item.id})" style="cursor:pointer">
         <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
-          <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;filter:${item.imgFilter || ''}" alt="">
         </div>
         <div class="cart-item-details">
           <div class="cart-item-name">${item.name}</div>
@@ -441,13 +494,13 @@
           <div class="cart-item-qty-badge">আইটেমঃ ${toBn(item.qty)}</div>
           <div class="cart-item-qty">
             <div class="qty-selector">
-              <button class="qty-btn" onclick="App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+              <button class="qty-btn" onclick="event.stopPropagation();App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
               <span class="qty-value">${toBn(item.qty)}</span>
-              <button class="qty-btn" onclick="App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+              <button class="qty-btn" onclick="event.stopPropagation();App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
             </div>
           </div>
         </div>
-        <button class="cart-item-delete" onclick="App.removeFromCart(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
+        <button class="cart-item-delete" onclick="event.stopPropagation();App.removeFromCart(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
       </div>
     `).join('');
 
@@ -535,6 +588,36 @@
     });
   }
 
+  // Open product detail for a cart line (cart rows are clickable).
+  function openCartItemDetail(id) {
+    const item = state.cartItems.find(i => i.id === id);
+    if (!item) return;
+    populateProductDetail(item);
+    navigateTo('product-detail');
+  }
+
+  // Fill the product-detail screen from a product-like object {name,nameEn,weight,price,image}.
+  function populateProductDetail(d) {
+    const name = d.name, nameEn = d.nameEn || d.name, weight = d.weight || '', price = d.price, img = d.image || './images/rice_akij.png';
+    setText('detail-name', name);
+    setText('detail-header-title', name.length > 18 ? name.substring(0, 18) + '...' : name);
+    setText('detail-price', '৳' + toBn(price.toLocaleString()));
+    setText('detail-weight', '(' + toBn(weight) + ')');
+    setText('detail-brand', 'ব্র্যান্ডঃ ' + name.split(' ')[0]);
+    const desc = document.getElementById('detail-description');
+    if (desc) {
+      desc.innerHTML = nameEn + ' - ' + weight + '.<br>Product Type: Grocery.<br>Net Weight: ' + weight +
+        '... <span class="product-description-link">সম্পূর্ণ দেখুন</span>';
+    }
+    const imgEl = document.getElementById('detail-image');
+    if (imgEl) {
+      imgEl.src = img;
+      imgEl.style.transform = (img.includes('oil') || img.includes('flour')) ? 'scale(1.2)' : 'scale(1)';
+      imgEl.style.filter = d.imgFilter || '';
+    }
+    refreshIcons();
+  }
+
   function renderCheckout() {
     const checkoutItems = document.getElementById('checkout-items');
     if (!checkoutItems) return;
@@ -571,9 +654,9 @@
     const el = document.getElementById('order-detail-items');
     if (!el) return;
     el.innerHTML = state.cartItems.map(item => `
-      <div class="cart-item">
+      <div class="cart-item" onclick="App.openCartItemDetail(${item.id})" style="cursor:pointer">
         <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
-          <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;filter:${item.imgFilter || ''}" alt="">
         </div>
         <div class="cart-item-details">
           <div class="cart-item-name" style="font-family:var(--font-en)">${item.nameEn}</div>
@@ -589,22 +672,22 @@
     const el = document.getElementById('repeat-items-list');
     if (!el) return;
     el.innerHTML = state.cartItems.map(item => `
-      <div class="repeat-item">
+      <div class="repeat-item" onclick="App.openCartItemDetail(${item.id})" style="cursor:pointer">
         <div class="repeat-item-image" style="background:#f5f5f5;overflow:hidden;">
-          <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;filter:${item.imgFilter || ''}" alt="">
         </div>
         <div class="repeat-item-details">
           <div class="repeat-item-name">${item.name}</div>
           <div class="repeat-item-info">${toBn(item.weight)} • <span class="repeat-item-price">৳${toBn(item.price.toLocaleString())}</span></div>
           <div class="cart-item-qty" style="margin-top:8px">
             <div class="qty-selector">
-              <button class="qty-btn"><i data-lucide="minus" style="width:13px;height:13px"></i></button>
+              <button class="qty-btn" onclick="event.stopPropagation()"><i data-lucide="minus" style="width:13px;height:13px"></i></button>
               <span class="qty-value">${toBn(item.qty)}</span>
-              <button class="qty-btn"><i data-lucide="plus" style="width:13px;height:13px"></i></button>
+              <button class="qty-btn" onclick="event.stopPropagation()"><i data-lucide="plus" style="width:13px;height:13px"></i></button>
             </div>
           </div>
         </div>
-        <button class="repeat-item-delete"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
+        <button class="repeat-item-delete" onclick="event.stopPropagation()"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
       </div>
     `).join('');
     refreshIcons();
@@ -618,67 +701,116 @@
     return String(value).replace(/[0-9]/g, d => map[d]);
   }
 
-  function startModifyWindow() {
-    // Returning to a locked order (e.g. from report-issue) keeps the locked state.
-    if (state.orderLocked) {
-      showGuaranteeState();
-      return;
-    }
+  // ── Persisted editable-order window ──
+  const EDITABLE_KEY = 'priyoshop_editable_order';
 
-    const box = document.getElementById('modify-window-box');
-    const guarantee = document.getElementById('guarantee-box');
-    if (box) box.style.display = 'block';
-    if (guarantee) guarantee.style.display = 'none';
+  function saveEditableOrder() {
+    try {
+      localStorage.setItem(EDITABLE_KEY, JSON.stringify(state.editableOrder));
+      localStorage.setItem('priyoshop_delivery_note', state.deliveryNote || '');
+    } catch (e) { /* localStorage may be unavailable on file:// */ }
+  }
 
-    state.modifyRemaining = MODIFY_WINDOW_SECONDS;
-    updateCountdownLabel();
+  // Prototype starts clean: no editable order until one is placed this session.
+  function loadEditableOrder() {
+    state.editableOrder = { active: false, expiresAt: 0, status: 'editable' };
+    state.deliveryNote = '';
+    try { localStorage.removeItem(EDITABLE_KEY); } catch (e) { /* ignore */ }
+  }
 
-    if (state.modifyTimer) clearInterval(state.modifyTimer);
-    state.modifyTimer = setInterval(() => {
-      state.modifyRemaining -= 1;
-      if (state.modifyRemaining <= 0) {
+  // Called once when an order is placed.
+  function createEditableOrder() {
+    state.editableOrder = { active: true, expiresAt: Date.now() + MODIFY_WINDOW_SECONDS * 1000, status: 'editable' };
+    saveEditableOrder();
+    renderEditableSurfaces();
+  }
+
+  function remainingMs() {
+    return Math.max(0, state.editableOrder.expiresAt - Date.now());
+  }
+  function fmtClock(ms) {
+    const total = Math.floor(ms / 1000);
+    const m = Math.floor(total / 60), s = total % 60;
+    return toBn(String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'));
+  }
+  function fmtMins(ms) {
+    return toBn(Math.max(1, Math.ceil(ms / 60000))); // at least ১ while active
+  }
+
+  function startEditableTicker() {
+    if (state.editableTicker) clearInterval(state.editableTicker);
+    state.editableTicker = setInterval(() => {
+      if (state.editableOrder.active && state.editableOrder.status === 'editable' && remainingMs() <= 0) {
         lockOrder();
       } else {
-        updateCountdownLabel();
+        renderEditableSurfaces();
       }
     }, 1000);
   }
 
-  function updateCountdownLabel() {
-    const el = document.getElementById('modify-countdown');
-    if (!el) return;
-    const m = Math.floor(state.modifyRemaining / 60);
-    const s = state.modifyRemaining % 60;
-    el.textContent = toBn(String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'));
+  function isEditable() {
+    return state.editableOrder.active && state.editableOrder.status === 'editable' && remainingMs() > 0;
   }
 
+  // Window expired / pick-pack started → order moves to Processing.
   function lockOrder() {
-    if (state.modifyTimer) {
-      clearInterval(state.modifyTimer);
-      state.modifyTimer = null;
-    }
-    state.orderLocked = true;
-    showGuaranteeState();
+    state.editableOrder.status = 'processing';
+    saveEditableOrder();
+    renderEditableSurfaces();
   }
 
-  function showGuaranteeState() {
+  // Paint every surface that reflects the editable-order window.
+  function renderEditableSurfaces() {
+    const editable = isEditable();
+    const ms = remainingMs();
+
+    // order-success: countdown + modify-window vs guarantee
+    const cd = document.getElementById('modify-countdown');
+    if (cd) cd.textContent = fmtClock(ms);
     const box = document.getElementById('modify-window-box');
     const guarantee = document.getElementById('guarantee-box');
-    if (box) box.style.display = 'none';
-    if (guarantee) guarantee.style.display = 'block';
+    if (box) box.style.display = editable ? 'block' : 'none';
+    if (guarantee) guarantee.style.display = (state.editableOrder.active && !editable) ? 'block' : 'none';
+
+    // home floating status pill (passive; Home only)
+    const pill = document.getElementById('home-order-status');
+    if (pill) {
+      pill.style.display = (editable && state.currentScreen === 'home') ? 'flex' : 'none';
+      setText('home-status-clock', fmtClock(ms));
+      const bar = document.getElementById('home-status-progress');
+      if (bar) bar.style.width = Math.max(0, (ms / (MODIFY_WINDOW_SECONDS * 1000)) * 100) + '%';
+    }
+
+    // notifications reminder
+    const notif = document.getElementById('notif-editable');
+    if (notif) {
+      notif.style.display = editable ? 'flex' : 'none';
+      setText('notif-editable-mins', fmtMins(ms));
+    }
+
+    // order-list editable card
+    const olBadge = document.getElementById('order-list-status');
+    if (olBadge) {
+      olBadge.textContent = state.editableOrder.active
+        ? (editable ? 'পরিবর্তনযোগ্য' : 'প্রসেসিং')
+        : 'নতুন অর্ডার';
+    }
+    const olActions = document.getElementById('order-list-editable');
+    if (olActions) {
+      olActions.style.display = editable ? 'block' : 'none';
+      setText('order-list-mins', fmtMins(ms));
+    }
     refreshIcons();
   }
 
-  function stopModifyWindow() {
-    if (state.modifyTimer) {
-      clearInterval(state.modifyTimer);
-      state.modifyTimer = null;
-    }
+  // Kept for the navigateTo('order-success') hook — just repaint from shared state.
+  function startModifyWindow() {
+    renderEditableSurfaces();
   }
 
   function openModifyOrder() {
-    if (state.orderLocked) {
-      showToast('সময় শেষ — অর্ডার লক হয়ে গেছে');
+    if (!isEditable()) {
+      showToast('সময় শেষ — অর্ডার এখন প্রসেসিং-এ');
       return;
     }
     renderModifyOrder();
@@ -693,22 +825,22 @@
       list.innerHTML = '<div style="padding:40px 16px;text-align:center;color:var(--text-secondary)">কোনো পণ্য নেই</div>';
     } else {
       list.innerHTML = state.cartItems.map(item => `
-        <div class="cart-item" data-id="${item.id}">
+        <div class="cart-item" data-id="${item.id}" onclick="App.openCartItemDetail(${item.id})" style="cursor:pointer">
           <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
-            <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;" alt="">
+            <img src="${item.image || './images/rice_akij.png'}" style="width:100%;height:100%;object-fit:cover;filter:${item.imgFilter || ''}" alt="">
           </div>
           <div class="cart-item-details">
             <div class="cart-item-name">${item.name}</div>
             <div class="cart-item-weight">ওজনঃ ${toBn(item.weight)} • <span class="cart-item-price">৳${toBn(item.price.toLocaleString())}.০</span></div>
             <div class="cart-item-qty">
               <div class="qty-selector">
-                <button class="qty-btn" onclick="App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+                <button class="qty-btn" onclick="event.stopPropagation();App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
                 <span class="qty-value">${toBn(item.qty)}</span>
-                <button class="qty-btn" onclick="App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+                <button class="qty-btn" onclick="event.stopPropagation();App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
               </div>
             </div>
           </div>
-          <button class="cart-item-delete" onclick="App.removeFromCart(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
+          <button class="cart-item-delete" onclick="event.stopPropagation();App.removeFromCart(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
         </div>
       `).join('');
     }
@@ -720,6 +852,8 @@
         <div class="modify-total-row total"><span>পরিবর্তিত সর্বমোট</span><span>৳${toBn(total.toLocaleString())}</span></div>
       `;
     }
+    const note = document.getElementById('modify-delivery-note');
+    if (note) note.value = state.deliveryNote || '';
     refreshIcons();
   }
 
@@ -729,10 +863,18 @@
   }
 
   function cancelOrder() {
+    if (!isEditable()) { showToast('সময় শেষ — অর্ডার এখন প্রসেসিং-এ'); return; }
     if (!window.confirm('আপনি কি অর্ডারটি বাতিল করতে চান? কোনো জরিমানা নেই।')) return;
-    stopModifyWindow();
+    state.editableOrder.active = false;
+    saveEditableOrder();
+    renderEditableSurfaces();
     showToast('অর্ডার বাতিল হয়েছে');
     navigateTo('home');
+  }
+
+  function saveDeliveryNote(text) {
+    state.deliveryNote = text;
+    saveEditableOrder();
   }
 
   function selectIssue(el) {
@@ -740,9 +882,18 @@
     el.classList.add('selected');
   }
 
+  function addPhotoEvidence(input) {
+    const f = input && input.files && input.files[0];
+    const preview = document.getElementById('report-photo-preview');
+    if (preview) {
+      preview.textContent = f ? ('সংযুক্ত: ' + f.name) : '';
+      preview.style.display = f ? 'block' : 'none';
+    }
+  }
+
   function submitReport() {
-    showToast('রিপোর্ট পাঠানো হয়েছে — ২৪ ঘণ্টায় পিকআপ');
-    navigateTo('order-success');
+    showToast('রিপোর্ট পাঠানো হয়েছে — ২৪ ঘণ্টায় বিনামূল্যে রিটার্ন/রিফান্ড');
+    navigateTo('order-detail');
   }
 
   // ── 1-Tap Reorder ──
@@ -801,26 +952,26 @@
 
       if (unavailable) {
         const swapBtn = item.alt
-          ? `<button class="reorder-swap-btn" onclick="App.swapAlternative(${item.id})"><i data-lucide="repeat" style="width:13px;height:13px;pointer-events:none"></i> বিকল্প নিন (${item.alt.name})</button>`
+          ? `<button class="reorder-swap-btn" onclick="event.stopPropagation();App.swapAlternative(${item.id})"><i data-lucide="repeat" style="width:13px;height:13px;pointer-events:none"></i> বিকল্প নিন (${item.alt.name})</button>`
           : '';
         return `
-          <div class="reorder-item out-of-stock" data-id="${item.id}">
+          <div class="reorder-item out-of-stock" data-id="${item.id}" onclick="App.reorderOpenDetail(${item.id})" style="cursor:pointer">
             <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
-              <img src="${item.image}" style="width:100%;height:100%;object-fit:cover;opacity:.5" alt="">
+              <img src="${item.image}" style="width:100%;height:100%;object-fit:cover;opacity:.5;filter:${item.imgFilter || ''}" alt="">
             </div>
             <div class="reorder-item-details">
               <div class="cart-item-name">${item.name}</div>
               <span class="reorder-badge oos">স্টকে নেই</span>
               ${swapBtn}
             </div>
-            <button class="cart-item-delete" onclick="App.removeReorderItem(${item.id})"><i data-lucide="x" style="width:16px;height:16px;pointer-events:none"></i></button>
+            <button class="cart-item-delete" onclick="event.stopPropagation();App.removeReorderItem(${item.id})"><i data-lucide="x" style="width:16px;height:16px;pointer-events:none"></i></button>
           </div>`;
       }
 
       return `
-        <div class="reorder-item" data-id="${item.id}">
+        <div class="reorder-item" data-id="${item.id}" onclick="App.reorderOpenDetail(${item.id})" style="cursor:pointer">
           <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;">
-            <img src="${item.image}" style="width:100%;height:100%;object-fit:cover;" alt="">
+            <img src="${item.image}" style="width:100%;height:100%;object-fit:cover;filter:${item.imgFilter || ''}" alt="">
           </div>
           <div class="reorder-item-details">
             <div class="cart-item-name">${item.name}</div>
@@ -829,13 +980,13 @@
             ${item.swapped ? '<span class="reorder-badge swapped">বিকল্প যোগ হয়েছে</span>' : ''}
             <div class="cart-item-qty">
               <div class="qty-selector">
-                <button class="qty-btn" onclick="App.reorderChangeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+                <button class="qty-btn" onclick="event.stopPropagation();App.reorderChangeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
                 <span class="qty-value">${toBn(item.qty)}</span>
-                <button class="qty-btn" onclick="App.reorderChangeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+                <button class="qty-btn" onclick="event.stopPropagation();App.reorderChangeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
               </div>
             </div>
           </div>
-          <button class="cart-item-delete" onclick="App.removeReorderItem(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
+          <button class="cart-item-delete" onclick="event.stopPropagation();App.removeReorderItem(${item.id})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
         </div>`;
     }).join('');
 
@@ -875,6 +1026,11 @@
   function removeReorderItem(id) {
     state.reorderItems = state.reorderItems.filter(i => i.id !== id);
     renderReorderReview();
+  }
+
+  function reorderOpenDetail(id) {
+    const it = state.reorderItems.find(i => i.id === id);
+    if (it) { populateProductDetail(it); navigateTo('product-detail'); }
   }
 
   // Accept reconciliation → load available lines into cart → checkout.
@@ -1023,6 +1179,290 @@
     if (el) el.textContent = text;
   }
 
+  // ── Voice Ordering (Idea 1) ──
+
+  const VOICE_UNITS = ['কার্টন', 'carton', 'বস্তা', 'প্যাকেট', 'packet', 'কেজি', 'kg', 'লিটার', 'liter', 'litre', 'পিস', 'piece', 'টা', 'টি'];
+
+  // Levenshtein-based similarity (0..1) for fuzzy "did you mean" guessing.
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    const d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+    for (let j = 0; j <= n; j++) d[0][j] = j;
+    for (let i = 1; i <= m; i++)
+      for (let j = 1; j <= n; j++)
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[m][n];
+  }
+  function similarity(a, b) {
+    if (!a || !b) return 0;
+    const max = Math.max(a.length, b.length);
+    return max ? 1 - levenshtein(a, b) / max : 0;
+  }
+
+  function cleanToken(t) { return t.replace(/[^ঀ-৿a-z0-9]/g, ''); }
+  function isQtyOrUnit(w) {
+    if (!w) return true;
+    if (/^[0-9]+$/.test(w)) return true;
+    if (Object.keys(QTY_WORDS).some(k => w === k || w.startsWith(k))) return true;
+    if (VOICE_UNITS.some(u => w === u || w.startsWith(u))) return true;
+    return false;
+  }
+
+  // Extract quantity from a segment (word/digit + suffix forms like "ছয়টা", "২টি").
+  function qtyFromSegment(seg) {
+    const keys = Object.keys(QTY_WORDS).sort((a, b) => b.length - a.length);
+    for (const t of seg.split(/\s+/)) {
+      const clean = cleanToken(t);
+      if (!clean) continue;
+      if (/^[0-9]+$/.test(clean)) return parseInt(clean, 10);
+      for (const k of keys) if (clean === k || clean.startsWith(k)) return QTY_WORDS[k];
+    }
+    return 1;
+  }
+
+  // Best fuzzy guess across the whole catalog (for unrecognized speech).
+  function voiceBestGuess(seg) {
+    const words = seg.split(/\s+/).map(cleanToken).filter(w => w.length > 1 && !isQtyOrUnit(w));
+    let best = null, bestScore = 0;
+    VOICE_CATALOG.forEach(p => {
+      const cand = [...p.brandKeys, ...p.name.toLowerCase().split(/\s+/)];
+      let score = 0;
+      words.forEach(sw => cand.forEach(c => { const s = similarity(sw, c.toLowerCase()); if (s > score) score = s; }));
+      if (score > bestScore) { bestScore = score; best = p; }
+    });
+    return { product: best, score: bestScore };
+  }
+
+  // Convert a (simulated) spoken transcript into structured cart lines.
+  // Dialect "normalization" = keyword/synonym matching against VOICE_CATALOG;
+  // unknown items are surfaced as "did you mean?" cards rather than dropped.
+  function parseVoiceOrder(transcript) {
+    const text = (transcript || '').toLowerCase();
+    const segments = text.split(/আর|এবং|,|;|\+/).map(s => s.trim()).filter(Boolean);
+    const items = [];
+
+    segments.forEach(seg => {
+      const qty = qtyFromSegment(seg);
+
+      // 1. category
+      let cat = null;
+      for (const c in VOICE_CATEGORY_KEYS) {
+        if (VOICE_CATEGORY_KEYS[c].some(k => seg.includes(k))) { cat = c; break; }
+      }
+
+      if (cat) {
+        const inCat = VOICE_CATALOG.filter(p => p.cat === cat);
+        const brandMatches = inCat.filter(p => p.brandKeys.some(k => seg.includes(k)));
+        let product, confidence, suggestions = [];
+        if (brandMatches.length === 1) {
+          product = brandMatches[0]; confidence = 'high';
+        } else if (brandMatches.length > 1) {
+          product = brandMatches[0]; confidence = 'low'; suggestions = brandMatches.slice(0, 3);
+        } else {
+          product = inCat[0]; confidence = 'low'; suggestions = inCat.slice(0, 3);
+        }
+        items.push({ product: { ...product }, qty, confidence, suggestions: suggestions.map(s => ({ ...s })) });
+        return;
+      }
+
+      // 2. no category → unrecognized item (only if there's a real product-like token)
+      const meaningful = seg.split(/\s+/).map(cleanToken).filter(w => w && !isQtyOrUnit(w));
+      if (meaningful.length === 0) return;
+
+      const g = voiceBestGuess(seg);
+      let guess = null, suggestions = [];
+      if (g.product && g.score >= 0.45) {
+        guess = g.product;
+        suggestions = VOICE_CATALOG.filter(p => p.cat === g.product.cat).slice(0, 3);
+      }
+      items.push({
+        unrecognized: true, spoken: seg, qty, confidence: 'unrecognized',
+        guess: guess ? { ...guess } : null,
+        suggestions: suggestions.map(s => ({ ...s }))
+      });
+    });
+    return items;
+  }
+
+  function startVoiceOrder() {
+    if (!state.voice.permission) { openVoicePermission(); return; }
+    openVoiceOverlay();
+  }
+
+  function openVoicePermission() {
+    const o = document.getElementById('voice-permission-overlay');
+    const s = document.getElementById('voice-permission-sheet');
+    if (o) o.classList.add('open');
+    if (s) s.classList.add('open');
+  }
+
+  function closeVoicePermission() {
+    const o = document.getElementById('voice-permission-overlay');
+    const s = document.getElementById('voice-permission-sheet');
+    if (o) o.classList.remove('open');
+    if (s) s.classList.remove('open');
+  }
+
+  function grantVoicePermission() {
+    state.voice.permission = true;
+    closeVoicePermission();
+    openVoiceOverlay();
+  }
+
+  function denyVoicePermission() {
+    closeVoicePermission();
+    showToast('ভয়েস অর্ডার ব্যবহার করতে মাইক্রোফোন অনুমতি প্রয়োজন');
+  }
+
+  function openVoiceOverlay() {
+    const ov = document.getElementById('voice-overlay');
+    if (ov) ov.classList.add('open');
+    refreshIcons();
+  }
+
+  function closeVoiceOverlay() {
+    const ov = document.getElementById('voice-overlay');
+    if (ov) ov.classList.remove('open');
+  }
+
+  // End the (simulated) recording. With no real audio captured, treat it as the
+  // representative spoken order; demo chips remain for choosing a specific phrase.
+  function stopVoiceListening() {
+    runVoiceTranscript('রূপচাঁদা তেল এক কার্টন আর তীর চিনি দুই বস্তা');
+  }
+
+  // A demo chip "spoke" this transcript → parse + go to review.
+  function runVoiceTranscript(text) {
+    state.voice.transcript = text;
+    state.voice.items = parseVoiceOrder(text);
+    closeVoiceOverlay();
+    renderVoiceReview();
+    navigateTo('voice-review');
+  }
+
+  function renderVoiceReview() {
+    setText('voice-transcript', state.voice.transcript);
+    const list = document.getElementById('voice-review-items');
+    if (!list) return;
+
+    if (state.voice.items.length === 0) {
+      list.innerHTML = '<div style="padding:40px 16px;text-align:center;color:var(--text-secondary)">কোনো পণ্য বুঝতে পারিনি। আবার চেষ্টা করুন।</div>';
+    } else {
+      list.innerHTML = state.voice.items.map((it, i) => it.unrecognized
+        ? voiceUnrecognizedHtml(it, i)
+        : voiceItemHtml(it, i)).join('');
+    }
+
+    const total = state.voice.items.reduce((s, it) => s + (it.product ? it.product.price * it.qty : 0), 0);
+    const t = document.getElementById('voice-review-total');
+    if (t) t.innerHTML = `<div class="modify-total-row total"><span>মোট</span><span>৳${toBn(total.toLocaleString())}</span></div>`;
+    refreshIcons();
+  }
+
+  // Visual suggestion rows (image + name + price) shared by low-confidence & unrecognized.
+  function voiceSuggestionRowsHtml(i, suggestions, currentId) {
+    if (!suggestions || !suggestions.length) return '';
+    return `<div class="voice-suggestions">${suggestions.map(s => `
+      <button class="voice-suggestion-row${s.id === currentId ? ' active' : ''}" onclick="event.stopPropagation();App.voicePickSuggestion(${i}, ${s.id})">
+        <div class="voice-sugg-img"><img src="${s.image}" style="width:100%;height:100%;object-fit:cover;filter:${s.imgFilter || ''}" alt=""></div>
+        <span class="voice-sugg-name">${s.name}</span>
+        <span class="voice-sugg-price">৳${toBn(s.price.toLocaleString())}</span>
+      </button>`).join('')}</div>`;
+  }
+
+  function voiceItemHtml(it, i) {
+    const p = it.product;
+    const badge = it.confidence === 'high'
+      ? '<span class="voice-badge match"><i data-lucide="check" style="width:12px;height:12px"></i> মিল পাওয়া গেছে</span>'
+      : '<span class="voice-badge low"><i data-lucide="help-circle" style="width:12px;height:12px"></i> নিশ্চিত নয় — বেছে নিন</span>';
+    const sugg = it.confidence === 'low' ? voiceSuggestionRowsHtml(i, it.suggestions, p.id) : '';
+    return `
+      <div class="voice-review-row" onclick="App.voiceOpenDetail(${i})" style="cursor:pointer">
+        <div class="cart-item-image" style="background:#f5f5f5;overflow:hidden;"><img src="${p.image}" style="width:100%;height:100%;object-fit:cover;filter:${p.imgFilter || ''}" alt=""></div>
+        <div class="voice-review-details">
+          <div class="cart-item-name">${p.name}</div>
+          <div class="cart-item-weight">ওজনঃ ${toBn(p.weight)} • <span class="cart-item-price">৳${toBn(p.price.toLocaleString())}</span></div>
+          ${badge}
+          ${sugg}
+          <div class="cart-item-qty"><div class="qty-selector">
+            <button class="qty-btn" onclick="event.stopPropagation();App.voiceChangeQty(${i}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+            <span class="qty-value">${toBn(it.qty)}</span>
+            <button class="qty-btn" onclick="event.stopPropagation();App.voiceChangeQty(${i}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+          </div></div>
+        </div>
+        <button class="cart-item-delete" onclick="event.stopPropagation();App.voiceRemove(${i})"><i data-lucide="trash-2" style="width:16px;height:16px;pointer-events:none"></i></button>
+      </div>`;
+  }
+
+  function voiceUnrecognizedHtml(it, i) {
+    const header = it.guess
+      ? `<div class="voice-guess-chip"><i data-lucide="alert-triangle" style="width:14px;height:14px"></i> এটি কি ছিল: “${it.guess.name}”?</div>`
+      : '';
+    return `
+      <div class="voice-unrecognized">
+        ${header}
+        <div class="voice-unrecognized-top">
+          <div class="voice-unrecognized-img"><i data-lucide="help-circle" style="width:26px;height:26px;color:var(--text-tertiary)"></i></div>
+          <div class="voice-unrecognized-body">
+            <div class="voice-unrecognized-spoken">“${it.spoken}”</div>
+            <div class="voice-unrecognized-sub">অচেনা পণ্য — নিচে থেকে বেছে নিন।</div>
+            <div class="cart-item-qty" style="margin-top:6px"><div class="qty-selector">
+              <button class="qty-btn" onclick="App.voiceChangeQty(${i}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
+              <span class="qty-value">${toBn(it.qty)}</span>
+              <button class="qty-btn" onclick="App.voiceChangeQty(${i}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
+            </div></div>
+          </div>
+          <button class="cart-item-delete" style="position:static" onclick="App.voiceRemove(${i})"><i data-lucide="x" style="width:18px;height:18px;pointer-events:none"></i></button>
+        </div>
+        ${voiceSuggestionRowsHtml(i, it.suggestions, null)}
+      </div>`;
+  }
+
+  function voiceChangeQty(i, delta) {
+    const it = state.voice.items[i];
+    if (it) { it.qty = Math.max(1, it.qty + delta); renderVoiceReview(); }
+  }
+
+  function voicePickSuggestion(i, id) {
+    const it = state.voice.items[i];
+    const sel = (it && it.suggestions.find(s => s.id === id)) || VOICE_CATALOG.find(s => s.id === id);
+    if (it && sel) {
+      it.product = { ...sel };
+      it.confidence = 'high';
+      it.unrecognized = false;
+      it.guess = null;
+      renderVoiceReview();
+    }
+  }
+
+  function voiceRemove(i) {
+    state.voice.items.splice(i, 1);
+    renderVoiceReview();
+  }
+
+  function voiceOpenDetail(i) {
+    const it = state.voice.items[i];
+    if (it && it.product) { populateProductDetail(it.product); navigateTo('product-detail'); }
+  }
+
+  function voiceAddToCart() {
+    const resolved = state.voice.items.filter(it => it.product && !it.unrecognized);
+    if (resolved.length === 0) { showToast('যোগ করার মতো পণ্য নেই'); return; }
+    resolved.forEach(it => {
+      const ex = state.cartItems.find(c => c.id === it.product.id);
+      if (ex) ex.qty += it.qty;
+      else state.cartItems.push({
+        id: it.product.id, name: it.product.name, nameEn: it.product.nameEn,
+        weight: it.product.weight, price: it.product.price, qty: it.qty, image: it.product.image
+      });
+    });
+    renderCart();
+    const unresolved = state.voice.items.length - resolved.length;
+    showToast(unresolved > 0 ? 'কিছু পণ্য বেছে নেওয়া হয়নি — বাকিগুলো যোগ হয়েছে' : 'ভয়েস অর্ডার কার্টে যোগ হয়েছে');
+    navigateTo('cart');
+  }
+
   // Reusable toast (generalized from showAddedToast).
   function showToast(message) {
     const toast = document.createElement('div');
@@ -1125,6 +1565,7 @@
     changeQty,
     removeFromCart,
     addToCart,
+    openCartItemDetail,
     openBottomSheet,
     closeBottomSheet,
     toggleDrawer,
@@ -1135,12 +1576,26 @@
     lockOrder,
     selectIssue,
     submitReport,
+    saveDeliveryNote,
+    addPhotoEvidence,
     startReorder,
     reorderChangeQty,
     swapAlternative,
     removeReorderItem,
+    reorderOpenDetail,
     proceedReorderCheckout,
-    redeem
+    redeem,
+    startVoiceOrder,
+    grantVoicePermission,
+    denyVoicePermission,
+    runVoiceTranscript,
+    stopVoiceListening,
+    voiceChangeQty,
+    voicePickSuggestion,
+    voiceRemove,
+    voiceOpenDetail,
+    voiceAddToCart,
+    closeVoiceOverlay
   };
 
 })();
