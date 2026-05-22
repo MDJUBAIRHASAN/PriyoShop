@@ -48,6 +48,18 @@
           </div>
         </div>
 
+        <!-- 1-Tap Reorder Card -->
+        <div class="reorder-card" onclick="App.startReorder()">
+          <div class="reorder-card-icon"><i data-lucide="rotate-ccw" style="width:24px;height:24px"></i></div>
+          <div class="reorder-card-body">
+            <div class="reorder-card-title">আপনার শেষ অর্ডারটি আবার দিন</div>
+            <div class="reorder-card-summary" id="reorder-card-summary">৩২টি পণ্য • ৳৪৬,৬১০</div>
+          </div>
+          <button class="reorder-card-btn" onclick="event.stopPropagation();App.startReorder()">
+            <i data-lucide="zap" style="width:15px;height:15px"></i> এক ট্যাপে অর্ডার
+          </button>
+        </div>
+
         <!-- Banner Carousel -->
         <div class="banner-carousel">
           <div class="carousel-track">
@@ -858,7 +870,14 @@
           <div id="checkout-items"></div>
           <div class="checkout-totals" id="checkout-totals"></div>
         </div>
-        <div class="checkout-bottom" style="background:#333;padding:30px 16px 16px;border-radius:var(--radius-xl) var(--radius-xl) 0 0;margin-top:auto">
+        <div class="checkout-assurance">
+          <i data-lucide="shield-check" style="width:22px;height:22px;color:var(--success);flex-shrink:0"></i>
+          <div>
+            <div class="checkout-assurance-title">নিশ্চিন্তে অর্ডার করুন</div>
+            <div class="checkout-assurance-text">অর্ডার দেওয়ার পর ৩০ মিনিট পর্যন্ত বিনামূল্যে পরিবর্তন বা বাতিল করতে পারবেন। ভুল হলে কোনো জরিমানা নেই।</div>
+          </div>
+        </div>
+        <div class="checkout-bottom" style="padding:16px;margin-top:auto">
           <button class="confirm-order-btn" data-navigate="order-success-payment">কনফার্ম অর্ডার</button>
         </div>
       </section>
@@ -882,10 +901,101 @@
             <div class="order-detail-row"><span class="label">ক্রেডিট পরিশোধঃ</span><span class="value">N/A</span></div>
             <div class="order-detail-row"><span class="label">স্ট্যাটাসঃ</span><span class="value status">New Order</span></div>
           </div>
+
+          <!-- Modify-window (active for 30 min after placement) -->
+          <div class="modify-window-box" id="modify-window-box">
+            <div class="modify-window-msg">
+              আপনার অর্ডারটি প্লেস করা হয়েছে। পরবর্তী ৩০ মিনিট বিনামূল্যে পরিবর্তন বা বাতিল করতে পারবেন।
+            </div>
+            <div class="modify-countdown-pill">
+              <i data-lucide="clock" style="width:16px;height:16px"></i>
+              <span id="modify-countdown">৩০:০০</span> বাকি
+            </div>
+            <div class="modify-window-actions">
+              <button class="btn-outline-primary" onclick="App.openModifyOrder()">অর্ডার পরিবর্তন করুন</button>
+              <button class="btn-cancel-order" onclick="App.cancelOrder()">অর্ডার বাতিল করুন</button>
+            </div>
+            <span class="demo-lock-link" onclick="App.lockOrder()">demo: lock now</span>
+          </div>
+
+          <!-- Checkout Guarantee (locked state, shown after window expires) -->
+          <div class="guarantee-box" id="guarantee-box" style="display:none">
+            <div class="guarantee-badge">
+              <i data-lucide="shield-check" style="width:26px;height:26px;color:var(--success)"></i>
+              <div>
+                <div class="guarantee-badge-title">চেকআউট গ্যারান্টি</div>
+                <div class="guarantee-badge-sub">ভুল পণ্য বা ভুল পরিমাণে—বিনামূল্যে ফেরত।</div>
+              </div>
+            </div>
+            <div class="return-policy">
+              <div class="return-policy-title">ফেরত নীতি</div>
+              <div class="return-policy-line"><i data-lucide="check" style="width:14px;height:14px;color:var(--success)"></i> ভুল পণ্য বা ভুল পরিমাণ এলে বিনামূল্যে ফেরত।</div>
+              <div class="return-policy-line"><i data-lucide="check" style="width:14px;height:14px;color:var(--success)"></i> ডেলিভারির ২৪ ঘণ্টার মধ্যে সমস্যা জানান।</div>
+              <div class="return-policy-line"><i data-lucide="check" style="width:14px;height:14px;color:var(--success)"></i> আমরা নিজেরা পণ্য নিয়ে যাব—পিকআপ ফ্রি।</div>
+              <div class="return-policy-line"><i data-lucide="check" style="width:14px;height:14px;color:var(--success)"></i> পুরো টাকা ফেরত, কোনো প্রশ্ন নেই।</div>
+            </div>
+            <button class="btn-report-issue" data-navigate="report-issue">সমস্যা রিপোর্ট করুন</button>
+          </div>
+
           <div class="success-actions">
             <button class="btn-outline-primary" data-navigate="order-repeat">আপনি কি অর্ডার টি পুনরাবৃত্ত করতে চান?</button>
             <button class="btn-primary" data-navigate="home">হোম-এ ফিরে যান</button>
           </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════
+           SCREEN 7b: MODIFY ORDER (within 30-min window)
+           ════════════════════════════════════════ -->
+      <section id="screen-modify-order" class="screen">
+        <div class="app-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <h1 class="header-title">অর্ডার পরিবর্তন করুন</h1>
+        </div>
+        <div class="modify-note">
+          <i data-lucide="badge-check" style="width:16px;height:16px;color:var(--success);vertical-align:middle"></i>
+          কোনো জরিমানা নেই — যেকোনো পরিবর্তন বিনামূল্যে।
+        </div>
+        <div id="modify-items-list"></div>
+        <div class="modify-totals-box" id="modify-totals"></div>
+        <div class="cart-bottom-bar">
+          <button class="cart-submit-btn" onclick="App.confirmModify()">পরিবর্তন নিশ্চিত করুন</button>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════
+           SCREEN 7c: REPORT ISSUE (Checkout Guarantee)
+           ════════════════════════════════════════ -->
+      <section id="screen-report-issue" class="screen">
+        <div class="app-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <h1 class="header-title">সমস্যা রিপোর্ট করুন</h1>
+        </div>
+        <div style="padding:16px">
+          <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px">কী সমস্যা হয়েছে তা বেছে নিন—</p>
+          <div class="payment-title">সমস্যার ধরন</div>
+          <div class="payment-option selected" onclick="App.selectIssue(this)">
+            <div class="radio"></div>
+            <span class="payment-name">ভুল পণ্য এসেছে</span>
+            <i data-lucide="package-x" style="width:22px;height:22px;color:var(--primary);margin-left:auto"></i>
+          </div>
+          <div class="payment-option" onclick="App.selectIssue(this)">
+            <div class="radio"></div>
+            <span class="payment-name">ভুল পরিমাণ এসেছে</span>
+            <i data-lucide="scale" style="width:22px;height:22px;color:var(--primary);margin-left:auto"></i>
+          </div>
+          <div class="payment-option" onclick="App.selectIssue(this)">
+            <div class="radio"></div>
+            <span class="payment-name">পণ্য নষ্ট/ভাঙা</span>
+            <i data-lucide="alert-triangle" style="width:22px;height:22px;color:var(--primary);margin-left:auto"></i>
+          </div>
+          <div class="report-promise">
+            <i data-lucide="truck" style="width:18px;height:18px;color:var(--success)"></i>
+            ২৪ ঘণ্টার মধ্যে বিনামূল্যে পিকআপ ও সম্পূর্ণ রিফান্ড।
+          </div>
+        </div>
+        <div class="cart-bottom-bar">
+          <button class="cart-submit-btn" onclick="App.submitReport()">রিপোর্ট পাঠান</button>
         </div>
       </section>
 
@@ -957,6 +1067,28 @@
             <span class="order-amount">৳ ৩৯,৯৭৫</span>
             <button class="order-detail-link" data-navigate="order-detail">বিস্তারিত <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button>
           </div>
+          <button class="order-reorder-btn" onclick="App.startReorder()">
+            <i data-lucide="rotate-ccw" style="width:15px;height:15px"></i> পুনরায় অর্ডার করুন
+          </button>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════
+           SCREEN 9b: REORDER REVIEW (reconciliation)
+           ════════════════════════════════════════ -->
+      <section id="screen-reorder-review" class="screen">
+        <div class="app-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <h1 class="header-title">অর্ডার মিলিয়ে নিন</h1>
+        </div>
+        <div class="reorder-issue-banner" id="reorder-issue-banner">
+          <i data-lucide="info" style="width:18px;height:18px;color:var(--warning);flex-shrink:0"></i>
+          <span id="reorder-issue-text"></span>
+        </div>
+        <div id="reorder-review-items"></div>
+        <div class="modify-totals-box" id="reorder-review-total"></div>
+        <div class="cart-bottom-bar">
+          <button class="cart-submit-btn" onclick="App.proceedReorderCheckout()">চেকআউটে যান</button>
         </div>
       </section>
 
@@ -1087,12 +1219,15 @@
           <button class="back-btn"><i data-lucide="arrow-left"></i></button>
           <h1 class="header-title">নোটিফিকেশন</h1>
         </div>
-        <div class="notification-empty">
-          <div class="notification-illustration">
-            <i data-lucide="bell-off" style="width:80px;height:80px;color:var(--accent-pink);opacity:.7"></i>
+        <div class="notif-card" onclick="App.startReorder()">
+          <div class="notif-card-icon"><i data-lucide="rotate-ccw" style="width:20px;height:20px"></i></div>
+          <div class="notif-card-body">
+            <div class="notif-card-title">সাপ্তাহিক অর্ডারের সময় হয়েছে!</div>
+            <div class="notif-card-text">গত সপ্তাহে আপনি <span id="reorder-notif-summary">৩২টি পণ্য • ৳৪৬,৬১০</span> অর্ডার করেছিলেন। এক ট্যাপে আবার অর্ডার করবেন?</div>
+            <button class="notif-card-btn" onclick="event.stopPropagation();App.startReorder()">
+              <i data-lucide="zap" style="width:14px;height:14px"></i> এক ট্যাপে অর্ডার করুন
+            </button>
           </div>
-          <h2 class="notification-title">এই মুহূর্তে আপনার জন্য কোন নোটিফিকেশন নেই!</h2>
-          <p class="notification-subtitle">নতুন কোনো অফার ও তথ্য থাকলে আপনাকে জানানো হবে।</p>
         </div>
       </section>
 

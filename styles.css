@@ -3207,3 +3207,456 @@ body {
   height: 90px;
   font-size: 18px;
 }
+
+/* ── Modify-After-Order & Checkout Guarantee (Idea 5) ── */
+.modify-window-box {
+  width: 100%;
+  background: #E8F5E9;
+  border: 1px solid var(--success-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.modify-window-msg {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #2E7D32;
+  margin-bottom: 12px;
+}
+
+.modify-countdown-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--warning);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.modify-countdown-pill #modify-countdown {
+  font-family: var(--font-en);
+  letter-spacing: 0.5px;
+}
+
+.modify-window-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-cancel-order {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--border);
+  background: var(--white);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-bn);
+  transition: all var(--transition-fast);
+}
+
+.btn-cancel-order:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.demo-lock-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: var(--font-en);
+}
+
+/* Locked state — Checkout Guarantee */
+.guarantee-box {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.guarantee-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #E8F5E9;
+  border: 1px solid var(--success-light);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.guarantee-badge-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2E7D32;
+}
+
+.guarantee-badge-sub {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.return-policy {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.return-policy-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.return-policy-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.return-policy-line:last-child {
+  margin-bottom: 0;
+}
+
+.return-policy-line i {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.btn-report-issue {
+  width: 100%;
+  padding: 14px;
+  background: var(--white);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-bn);
+  transition: all var(--transition-fast);
+}
+
+.btn-report-issue:hover {
+  background: var(--accent-pink-pale);
+}
+
+/* Modify-order screen */
+.modify-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  font-size: 13px;
+  padding: 12px 16px;
+  margin: 0;
+}
+
+.modify-totals-box {
+  padding: 16px;
+  border-top: 8px solid var(--bg-secondary);
+}
+
+.modify-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.modify-total-row span:last-child {
+  font-family: var(--font-en);
+}
+
+/* Checkout assurance notice */
+.checkout-assurance {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #E8F5E9;
+  border: 1px solid var(--success-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin: 12px 16px;
+}
+
+.checkout-assurance-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2E7D32;
+  margin-bottom: 2px;
+}
+
+.checkout-assurance-text {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ── 1-Tap Reorder (Idea 6) ── */
+.reorder-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 16px 4px;
+  padding: 14px;
+  background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+  border: 1px solid #FFCC80;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.reorder-card:active {
+  transform: scale(0.99);
+}
+
+.reorder-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reorder-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.reorder-card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.reorder-card-summary {
+  font-size: 12.5px;
+  color: #E65100;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.reorder-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: var(--font-bn);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.reorder-card-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* Reorder button on each past order */
+.order-reorder-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px;
+  background: var(--white);
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-bn);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.order-reorder-btn:hover {
+  background: var(--accent-pink-pale);
+}
+
+/* Reconciliation screen */
+.reorder-issue-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF8E1;
+  border-bottom: 1px solid #FFE082;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #8D6E00;
+}
+
+.reorder-item {
+  display: flex;
+  padding: 14px 16px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+}
+
+.reorder-item.out-of-stock {
+  background: #FAFAFA;
+}
+
+.reorder-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.reorder-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.reorder-badge.oos {
+  background: #FFEBEE;
+  color: var(--primary);
+}
+
+.reorder-badge.price {
+  background: #FFF3E0;
+  color: #E65100;
+  font-family: var(--font-en);
+}
+
+.reorder-badge.swapped {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.reorder-swap-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: var(--white);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-bn);
+  cursor: pointer;
+  text-align: left;
+}
+
+.reorder-swap-btn:hover {
+  background: var(--accent-pink-pale);
+}
+
+/* Notification card (weekly reorder reminder) */
+.notif-card {
+  display: flex;
+  gap: 12px;
+  margin: 16px;
+  padding: 14px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.notif-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-pink-pale);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-card-body {
+  flex: 1;
+}
+
+.notif-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.notif-card-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.notif-card-text span {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.notif-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 9px 14px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-bn);
+  cursor: pointer;
+}
+
+.notif-card-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* Report-issue screen */
+.report-promise {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 18px;
+}
