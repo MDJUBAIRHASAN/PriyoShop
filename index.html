@@ -32,7 +32,7 @@
             <div class="location-info" id="location-trigger">
               <i data-lucide="map-pin" class="location-pin-icon"></i>
               <div class="location-text">
-                <span class="location-name">Shepherd <i data-lucide="chevron-down" style="width:12px;height:12px;vertical-align:middle"></i></span>
+                <span class="location-name">Shahi General Store <i data-lucide="chevron-down" style="width:12px;height:12px;vertical-align:middle"></i></span>
                 <span class="location-address">Dhanmondi, Dhaka</span>
               </div>
             </div>
@@ -45,6 +45,9 @@
               <i data-lucide="search" class="search-icon"></i>
               <span class="search-placeholder">আপনার প্রয়োজনীয় পণ্য সার্চ করুন</span>
             </div>
+            <button class="voice-mic-btn" onclick="event.stopPropagation();App.startVoiceOrder()" aria-label="ভয়েস অর্ডার">
+              <i data-lucide="mic" style="width:20px;height:20px"></i>
+            </button>
           </div>
         </div>
 
@@ -264,6 +267,9 @@
           <div class="search-input-wrapper">
             <i data-lucide="search" style="width:18px;height:18px;color:var(--text-tertiary);flex-shrink:0"></i>
             <input type="text" id="search-input" placeholder="সার্চ করুন..." autocomplete="off">
+            <button class="voice-mic-inline" onclick="App.startVoiceOrder()" aria-label="ভয়েস অর্ডার">
+              <i data-lucide="mic" style="width:18px;height:18px"></i>
+            </button>
           </div>
           <button class="header-action-btn" data-navigate="cart">
             <i data-lucide="shopping-cart"></i>
@@ -647,7 +653,7 @@
           <div class="product-card" data-navigate="product-detail" data-category="ajinomoto">
             <div class="product-image" style="background:#fff;overflow:hidden;">
               <img src="./images/ajinomoto.png" style="width:100%;height:100%;object-fit:cover;filter: hue-rotate(120deg);" alt="Product">
-              <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:601,name:'থাই আজিনোমতো ১ কেজি',nameEn:'Thai Ajinomoto 1kg',weight:'1 kg',price:280,image:'./images/ajinomoto.png'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
+              <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:601,name:'থাই আজিনোমতো ১ কেজি',nameEn:'Thai Ajinomoto 1kg',weight:'1 kg',price:280,image:'./images/ajinomoto.png',imgFilter:'hue-rotate(120deg)'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
             </div>
             <div class="product-info">
               <span class="product-weight">1 kg</span>
@@ -658,7 +664,7 @@
           <div class="product-card" data-navigate="product-detail" data-category="ajinomoto">
             <div class="product-image" style="background:#fff;overflow:hidden;">
               <img src="./images/ajinomoto.png" style="width:100%;height:100%;object-fit:cover;filter: hue-rotate(240deg);" alt="Product">
-              <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:602,name:'চাইনিজ আজিনোমতো ১ কেজি',nameEn:'Chinese Ajinomoto 1kg',weight:'1 kg',price:200,image:'./images/ajinomoto.png'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
+              <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:602,name:'চাইনিজ আজিনোমতো ১ কেজি',nameEn:'Chinese Ajinomoto 1kg',weight:'1 kg',price:200,image:'./images/ajinomoto.png',imgFilter:'hue-rotate(240deg)'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
             </div>
             <div class="product-info">
               <span class="product-weight">1 kg</span>
@@ -669,7 +675,7 @@
           <div class="product-card" data-navigate="product-detail" data-category="ajinomoto">
             <div class="product-image" style="background:#fff;overflow:hidden;">
               <img src="./images/ajinomoto.png" style="width:100%;height:100%;object-fit:cover;filter: invert(0.1) saturate(2);" alt="Product">
-              <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:603,name:'মেলা আজিনোমতো ১ কেজি',nameEn:'Mela Ajinomoto 1kg',weight:'1 kg',price:220,image:'./images/ajinomoto.png'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
+              <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:603,name:'মেলা আজিনোমতো ১ কেজি',nameEn:'Mela Ajinomoto 1kg',weight:'1 kg',price:220,image:'./images/ajinomoto.png',imgFilter:'invert(0.1) saturate(2)'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
             </div>
             <div class="product-info">
               <span class="product-weight">1 kg</span>
@@ -858,7 +864,7 @@
         </div>
         <div class="checkout-delivery">
           <div class="checkout-delivery-label"><i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:middle"></i> ডেলিভারি লোকেশন</div>
-          <div class="checkout-delivery-name">Shepherd</div>
+          <div class="checkout-delivery-name">Shahi General Store</div>
           <div class="checkout-delivery-address">Dhanmondi, Dhaka-1205</div>
           <div class="checkout-delivery-phone">01521797368</div>
         </div>
@@ -966,6 +972,13 @@
           কোনো জরিমানা নেই — যেকোনো পরিবর্তন বিনামূল্যে।
         </div>
         <div id="modify-items-list"></div>
+        <button class="modify-add-more" data-navigate="all-products">
+          <i data-lucide="plus-circle" style="width:18px;height:18px"></i> আরও পণ্য যোগ করুন
+        </button>
+        <div class="modify-note-section">
+          <label class="modify-note-label">ডেলিভারি নোট (ঐচ্ছিক)</label>
+          <textarea class="modify-delivery-note" id="modify-delivery-note" rows="2" placeholder="যেমনঃ দুপুরের আগে ডেলিভারি দিন" oninput="App.saveDeliveryNote(this.value)"></textarea>
+        </div>
         <div class="modify-totals-box" id="modify-totals"></div>
         <div class="cart-bottom-bar">
           <button class="cart-submit-btn" onclick="App.confirmModify()">পরিবর্তন নিশ্চিত করুন</button>
@@ -998,6 +1011,12 @@
             <span class="payment-name">পণ্য নষ্ট/ভাঙা</span>
             <i data-lucide="alert-triangle" style="width:22px;height:22px;color:var(--primary);margin-left:auto"></i>
           </div>
+          <div class="payment-title" style="margin-top:18px">ছবি যোগ করুন (ঐচ্ছিক)</div>
+          <label class="report-photo-btn">
+            <i data-lucide="camera" style="width:18px;height:18px"></i> ছবি আপলোড করুন
+            <input type="file" accept="image/*" style="display:none" onchange="App.addPhotoEvidence(this)">
+          </label>
+          <div class="report-photo-preview" id="report-photo-preview" style="display:none"></div>
           <div class="report-promise">
             <i data-lucide="truck" style="width:18px;height:18px;color:var(--success)"></i>
             ২৪ ঘণ্টার মধ্যে বিনামূল্যে পিকআপ ও সম্পূর্ণ রিফান্ড।
@@ -1070,11 +1089,18 @@
               <div class="order-date">তারিখঃ ২২-May-২০২৬ | ০৫:০৬ PM</div>
               <div class="order-payment">পেমেন্টঃ Cash On Delivery</div>
             </div>
-            <span class="order-status-badge">নতুন অর্ডার</span>
+            <span class="order-status-badge" id="order-list-status">নতুন অর্ডার</span>
           </div>
           <div class="order-card-footer">
             <span class="order-amount">৳ ৩৯,৯৭৫</span>
             <button class="order-detail-link" data-navigate="order-detail">বিস্তারিত <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button>
+          </div>
+          <div class="order-editable-block" id="order-list-editable" style="display:none">
+            <div class="order-editable-timer"><i data-lucide="clock" style="width:14px;height:14px"></i> <span id="order-list-mins">৩০</span> মিনিট বাকি — এখনও পরিবর্তনযোগ্য</div>
+            <div class="order-editable-actions">
+              <button class="btn-outline-primary" onclick="App.openModifyOrder()">পরিবর্তন করুন</button>
+              <button class="btn-cancel-order" onclick="App.cancelOrder()">বাতিল করুন</button>
+            </div>
           </div>
           <button class="order-reorder-btn" onclick="App.startReorder()">
             <i data-lucide="rotate-ccw" style="width:15px;height:15px"></i> পুনরায় অর্ডার করুন
@@ -1122,7 +1148,7 @@
           <div class="order-details-card">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
               <i data-lucide="store" style="width:16px;height:16px;color:var(--text-secondary)"></i>
-              <span style="font-weight:700;font-family:var(--font-en)">Shepherd</span>
+              <span style="font-weight:700;font-family:var(--font-en)">Shahi General Store</span>
               <i data-lucide="check-circle" style="width:16px;height:16px;color:var(--info)"></i>
             </div>
             <div style="font-size:12px;color:var(--text-secondary);font-family:var(--font-en)">22-May-2026</div>
@@ -1137,6 +1163,11 @@
             <div class="order-detail-row"><span class="label">স্ট্যাটাসঃ</span><span class="value status">New Order</span></div>
             <div class="order-detail-row" style="font-weight:700;color:var(--primary)"><span class="label" style="color:var(--primary)">নেট টোটাল</span><span class="value" style="color:var(--primary)">৳৩৯,৯৭৫</span></div>
           </div>
+          <div class="checkout-guarantee-note">
+            <i data-lucide="shield-check" style="width:18px;height:18px;color:var(--success);flex-shrink:0"></i>
+            ভুল পণ্য, ভাঙা পণ্য বা ভুল পরিমাণ এলে—২৪ ঘণ্টার মধ্যে বিনামূল্যে রিটার্ন/রিফান্ড।
+          </div>
+          <button class="btn-report-issue" data-navigate="report-issue" style="margin-top:12px">সমস্যা রিপোর্ট করুন</button>
         </div>
       </section>
 
@@ -1174,7 +1205,7 @@
           <div class="account-avatar">J</div>
         </div>
         <div class="account-info">
-          <div class="account-name">Jbvn</div>
+          <div class="account-name">Md. Jubair Hasan</div>
           <div class="account-phone">+8801521797368</div>
         </div>
         <div class="account-section-divider"></div>
@@ -1228,6 +1259,15 @@
           <button class="back-btn"><i data-lucide="arrow-left"></i></button>
           <h1 class="header-title">নোটিফিকেশন</h1>
         </div>
+        <div class="notif-card notif-editable" id="notif-editable" style="display:none" data-navigate="order-success">
+          <div class="notif-card-icon" style="background:#FFF3E0;color:var(--warning)"><i data-lucide="clock" style="width:20px;height:20px"></i></div>
+          <div class="notif-card-body">
+            <div class="notif-card-title">অর্ডার এখনও পরিবর্তনযোগ্য</div>
+            <div class="notif-card-text">আপনার ১টি অর্ডার <span id="notif-editable-mins">৩০</span> মিনিট পর্যন্ত পরিবর্তন বা বাতিল করা যাবে।</div>
+            <button class="notif-card-btn" onclick="event.stopPropagation();App.navigateTo('order-success')"><i data-lucide="pencil" style="width:14px;height:14px"></i> অর্ডার দেখুন</button>
+          </div>
+        </div>
+
         <div class="notif-card" onclick="App.startReorder()">
           <div class="notif-card-icon"><i data-lucide="rotate-ccw" style="width:20px;height:20px"></i></div>
           <div class="notif-card-body">
@@ -1518,14 +1558,34 @@
         </div>
       </section>
 
+      <!-- ════════════════════════════════════════
+           SCREEN 23: VOICE ORDER REVIEW (Idea 1)
+           ════════════════════════════════════════ -->
+      <section id="screen-voice-review" class="screen">
+        <div class="app-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <h1 class="header-title">ভয়েস অর্ডার</h1>
+        </div>
+        <div class="voice-transcript-box">
+          <i data-lucide="quote" style="width:16px;height:16px;color:var(--primary);flex-shrink:0"></i>
+          <div><span class="voice-transcript-label">আপনি বলেছেন:</span> <span id="voice-transcript"></span></div>
+        </div>
+        <div id="voice-review-items"></div>
+        <div class="modify-totals-box" id="voice-review-total"></div>
+        <div class="cart-bottom-bar" style="flex-direction:column;gap:8px">
+          <button class="cart-submit-btn" onclick="App.voiceAddToCart()">কার্টে যোগ করুন</button>
+          <button class="voice-confirm-verbal" onclick="App.voiceAddToCart()"><i data-lucide="mic" style="width:15px;height:15px"></i> মুখে বলুন: “হ্যাঁ” / “ঠিক আছে”</button>
+        </div>
+      </section>
+
     </div><!-- /screens-container -->
 
     <!-- ── Navigation Drawer ── -->
     <div class="drawer-overlay"></div>
     <div class="drawer">
       <div class="drawer-header">
-        <div class="drawer-avatar">J</div>
-        <div class="drawer-user-name">Jbvn</div>
+        <div class="drawer-avatar">M</div>
+        <div class="drawer-user-name">Md. Jubair Hasan</div>
         <div class="drawer-user-phone">+8801521797368</div>
         <div class="drawer-points-badge"><i data-lucide="gift" style="width:14px;height:14px"></i> <span id="drawer-points">0 পয়েন্ট</span></div>
       </div>
@@ -1586,7 +1646,7 @@
       <div class="address-card selected">
         <div class="address-card-label">বর্তমান নির্বাচিত ঠিকানা</div>
         <div class="address-card-name">
-          <span style="display:flex;align-items:center;gap:6px"><i data-lucide="map-pin" style="width:14px;height:14px;color:var(--primary)"></i> Shepherd</span>
+          <span style="display:flex;align-items:center;gap:6px"><i data-lucide="map-pin" style="width:14px;height:14px;color:var(--primary)"></i> Shahi General Store</span>
           <i data-lucide="check-circle" class="check" style="width:20px;height:20px;color:var(--success)"></i>
         </div>
         <div class="address-card-address">Dhanmondi, Dhaka-1205</div>
@@ -1595,6 +1655,36 @@
         <i data-lucide="plus-circle" class="plus-icon"></i>
         <span>নতুন ঠিকানা যোগ করুন</span>
       </button>
+    </div>
+
+    <!-- ── Voice: Mic Permission Sheet (Idea 1) ── -->
+    <div class="bottom-sheet-overlay" id="voice-permission-overlay" onclick="App.denyVoicePermission()"></div>
+    <div class="bottom-sheet voice-permission-sheet" id="voice-permission-sheet">
+      <div class="bottom-sheet-handle"></div>
+      <div class="voice-perm-icon"><i data-lucide="mic" style="width:30px;height:30px;color:var(--primary)"></i></div>
+      <h3 class="bottom-sheet-title">মাইক্রোফোন ব্যবহারের অনুমতি</h3>
+      <p class="voice-perm-text">আপনার কথা শুনে অর্ডার নিতে মাইক্রোফোন ব্যবহারের অনুমতি দরকার। আপনি যা বলবেন তা শুধু অর্ডার বোঝার জন্য ব্যবহার হবে এবং নিরাপদ থাকবে।</p>
+      <button class="btn-primary" onclick="App.grantVoicePermission()">অনুমতি দিন</button>
+      <button class="btn-cancel-order" style="margin-top:10px" onclick="App.denyVoicePermission()">এখন না</button>
+    </div>
+
+    <!-- ── Voice: Listening Overlay (Idea 1) ── -->
+    <div class="voice-overlay" id="voice-overlay">
+      <button class="voice-overlay-close" onclick="App.closeVoiceOverlay()" aria-label="বন্ধ করুন"><i data-lucide="x" style="width:22px;height:22px"></i></button>
+      <div class="voice-prompt">কি অর্ডার করতে চান?</div>
+      <button class="voice-mic-pulse" onclick="App.stopVoiceListening()" aria-label="রেকর্ডিং শেষ করুন"><i data-lucide="mic" style="width:44px;height:44px;color:#fff"></i></button>
+      <div class="voice-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="voice-listening-label">শুনছি… বলা শেষ হলে মাইকে ট্যাপ করুন</div>
+      <button class="voice-stop-btn" onclick="App.stopVoiceListening()"><i data-lucide="mic-off" style="width:16px;height:16px"></i> শুনা শেষ করুন</button>
+      <div class="voice-demo-label">অথবা এভাবে বলুন:</div>
+      <div class="voice-chips">
+        <button class="voice-chip" onclick="App.runVoiceTranscript('রূপচাঁদা তেল এক কার্টন আর তীর চিনি দুই বস্তা')">“রূপচাঁদা তেল এক কার্টন আর তীর চিনি দুই বস্তা”</button>
+        <button class="voice-chip" onclick="App.runVoiceTranscript('আকিজ চাল পাঁচ বস্তা আর মুসুর ডাল দুই কেজি')">“আকিজ চাল পাঁচ বস্তা আর মুসুর ডাল দুই কেজি”</button>
+        <button class="voice-chip" onclick="App.runVoiceTranscript('তীর আটা তিন বস্তা')">“তীর আটা তিন বস্তা”</button>
+        <button class="voice-chip" onclick="App.runVoiceTranscript('চাল পাঁচ বস্তা')">“চাল পাঁচ বস্তা” (ব্র্যান্ড ছাড়া)</button>
+        <button class="voice-chip" onclick="App.runVoiceTranscript('আজিনা মতো এক কেজি')">“আজিনা মতো এক কেজি” (অচেনা পণ্য)</button>
+      </div>
+      <div class="voice-offline-note"><i data-lucide="wifi-off" style="width:14px;height:14px"></i> ইন্টারনেট না থাকলেও বলুন — সংযোগ ফিরলে সিঙ্ক হবে।</div>
     </div>
 
       <!-- ════════════════════════════════════════
@@ -1639,6 +1729,15 @@
         <span class="cart-badge">8</span>
       </button>
     </nav>
+
+    <!-- Passive editable-order status pill (floats above bottom nav, Home only) -->
+    <div class="home-order-status" id="home-order-status" style="display:none" data-navigate="order-success">
+      <span class="home-status-dot"></span>
+      <i data-lucide="shield-check" style="width:15px;height:15px;color:var(--success);flex-shrink:0"></i>
+      <span class="home-status-text">অর্ডার সুরক্ষিত · পরিবর্তনযোগ্য</span>
+      <span class="home-status-clock" id="home-status-clock">৩০:০০</span>
+      <div class="home-status-progress-track"><div class="home-status-progress" id="home-status-progress" style="width:100%"></div></div>
+    </div>
 
   </div><!-- /phone-screen -->
 </div><!-- /device-frame -->
