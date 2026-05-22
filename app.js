@@ -30,6 +30,8 @@
     reorderItems: [],
     // Voice ordering (Idea 1).
     voice: { permission: false, items: [], transcript: '' },
+    // Simple Mode (Idea 9).
+    simpleMode: false,
     // App-exclusive reward system (Idea 8).
     rewards: {
       points: 2340,
@@ -133,9 +135,10 @@
     loadEditableOrder();
     renderEditableSurfaces();
     startEditableTicker();
+    loadSimpleMode();
     adjustScale();
     window.addEventListener('resize', adjustScale);
-    navigateTo('home');
+    navigateTo(state.simpleMode ? 'simple-home' : 'home');
   }
 
   // ── Responsive Scaling ──
@@ -199,10 +202,13 @@
       setTimeout(() => triggerConfetti(screenId), 400);
     }
 
-    // New order placed → open a fresh 30-min editable window + award reward points.
+    // New order placed → open a fresh 30-min editable window + award reward points
+    // + reveal the 1-Tap Reorder card (hidden until the retailer has an order).
     if (screenId === 'order-success-payment') {
       createEditableOrder();
       awardPointsForOrder();
+      const rc = document.getElementById('home-reorder-card');
+      if (rc) rc.style.display = 'flex';
     }
 
     if (screenId === 'order-success') {
@@ -336,11 +342,17 @@
       item.classList.toggle('active', item.dataset.screen === screenId);
     });
 
-    // Show/hide bottom nav
-    const bottomNav = document.querySelector('.bottom-nav');
-    const screensWithNav = ['home', 'search', 'categories', 'cart', 'product-detail'];
-    if (bottomNav) {
-      bottomNav.style.display = mainScreens.includes(screenId) ? 'flex' : 'none';
+    const bottomNav = document.getElementById('bottom-nav');
+    const simpleNav = document.getElementById('simple-bottom-nav');
+
+    if (state.simpleMode) {
+      // Simple Mode: full nav hidden, simplified nav on its core screens.
+      if (bottomNav) bottomNav.style.display = 'none';
+      const simpleNavScreens = ['simple-home', 'search', 'order-list', 'cart'];
+      if (simpleNav) simpleNav.style.display = simpleNavScreens.includes(screenId) ? 'flex' : 'none';
+    } else {
+      if (simpleNav) simpleNav.style.display = 'none';
+      if (bottomNav) bottomNav.style.display = mainScreens.includes(screenId) ? 'flex' : 'none';
     }
   }
 
@@ -1558,6 +1570,56 @@
     });
   };
 
+  // ── Simple Mode (Idea 9) ──
+  const SIMPLE_KEY = 'priyoshop_simple_mode';
+
+  function loadSimpleMode() {
+    try { state.simpleMode = localStorage.getItem(SIMPLE_KEY) === '1'; } catch (e) { /* ignore */ }
+    applySimpleClass();
+    syncSimpleToggle();
+  }
+
+  function applySimpleClass() {
+    const screen = document.querySelector('.phone-screen');
+    if (screen) screen.classList.toggle('simple-mode', state.simpleMode);
+  }
+
+  function syncSimpleToggle() {
+    const t = document.getElementById('simple-mode-toggle');
+    if (t) t.classList.toggle('on', state.simpleMode);
+  }
+
+  function setSimpleMode(on) {
+    state.simpleMode = on;
+    try { localStorage.setItem(SIMPLE_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ }
+    applySimpleClass();
+    syncSimpleToggle();
+    state.screenHistory = [];
+    if (on) {
+      navigateTo('simple-home');
+      setTimeout(() => showToast('আপনি এখন Simple Mode ব্যবহার করছেন'), 300);
+    } else {
+      navigateTo('home');
+    }
+  }
+
+  function toggleSimpleMode() {
+    setSimpleMode(!state.simpleMode);
+  }
+
+  function openSimpleHelp() {
+    const o = document.getElementById('simple-help-overlay');
+    const s = document.getElementById('simple-help-sheet');
+    if (o) o.classList.add('open');
+    if (s) s.classList.add('open');
+  }
+  function closeSimpleHelp() {
+    const o = document.getElementById('simple-help-overlay');
+    const s = document.getElementById('simple-help-sheet');
+    if (o) o.classList.remove('open');
+    if (s) s.classList.remove('open');
+  }
+
   // ── Expose API ──
   window.App = {
     navigateTo,
@@ -1595,7 +1657,11 @@
     voiceRemove,
     voiceOpenDetail,
     voiceAddToCart,
-    closeVoiceOverlay
+    closeVoiceOverlay,
+    setSimpleMode,
+    toggleSimpleMode,
+    openSimpleHelp,
+    closeSimpleHelp
   };
 
 })();

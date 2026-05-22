@@ -4427,3 +4427,203 @@ body {
   border-radius: var(--radius-sm);
   margin-top: 18px;
 }
+
+/* ── Simple Mode (Idea 9) ── */
+
+/* Discover nudge on full home */
+.simple-discover {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 16px 4px;
+  padding: 12px 14px;
+  background: var(--accent-pink-pale);
+  border: 1px solid var(--primary-light);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.simple-discover span { flex: 1; }
+
+/* Account settings toggle */
+.simple-toggle-row { cursor: pointer; }
+.simple-toggle-row .label { display: flex; flex-direction: column; }
+.simple-toggle-row .label small { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
+.simple-switch {
+  margin-left: auto;
+  width: 46px;
+  height: 26px;
+  border-radius: 14px;
+  background: var(--border);
+  position: relative;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+.simple-switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: left var(--transition-fast);
+}
+.simple-switch.on { background: var(--success); }
+.simple-switch.on .knob { left: 23px; }
+
+/* Simple Home hub */
+#screen-simple-home { background: var(--bg-secondary); padding-bottom: 80px; }
+.simple-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--primary);
+  color: #fff;
+}
+.simple-store { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; }
+.simple-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.2);
+  padding: 5px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.simple-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 32px);
+  margin: 14px 16px 4px;
+  padding: 14px;
+  background: #fff;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-bn);
+  cursor: pointer;
+}
+.simple-greeting {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin: 14px 16px 4px;
+  color: var(--text-primary);
+}
+.simple-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 16px;
+}
+.simple-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 110px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  font-family: var(--font-bn);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+.simple-tile:active { transform: scale(0.97); }
+.simple-tile i {
+  width: 40px;
+  height: 40px;
+  color: var(--primary);
+}
+.simple-tile span { text-align: center; line-height: 1.3; }
+.simple-tile-help { background: #E8F5E9; border-color: var(--success-light); }
+.simple-tile-help i { color: var(--success); }
+.simple-nudge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 16px 24px;
+  padding: 14px;
+  background: #fff;
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.simple-nudge span { flex: 1; }
+
+/* Simplified bottom nav */
+.simple-bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: #fff;
+  border-top: 1px solid var(--border-light);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+  z-index: 50;
+}
+.simple-bottom-nav .nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: var(--font-bn);
+}
+.simple-bottom-nav .nav-item .nav-icon { width: 26px; height: 26px; }
+.simple-bottom-nav .nav-item .nav-label { font-size: 13px; font-weight: 600; }
+.simple-bottom-nav .nav-item.active { color: var(--primary); }
+
+/* Help sheet */
+.simple-help-text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+.simple-help-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-bn);
+  cursor: pointer;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+.simple-help-btn.call { background: var(--success); color: #fff; border: none; }
+.simple-help-btn.msg { background: #fff; color: var(--primary); border: 2px solid var(--primary); }
+
+/* Global large-text scope while Simple Mode is on (lightweight, CSS-only) */
+.phone-screen.simple-mode .app-header .header-title { font-size: 20px; }
+.phone-screen.simple-mode .product-name { font-size: 15px; }
+.phone-screen.simple-mode .product-price { font-size: 17px; }
+.phone-screen.simple-mode .cart-item-name { font-size: 16px; }
+.phone-screen.simple-mode .qty-btn { width: 34px; height: 34px; }
+.phone-screen.simple-mode .qty-value { font-size: 16px; }
+.phone-screen.simple-mode .btn-primary,
+.phone-screen.simple-mode .cart-submit-btn,
+.phone-screen.simple-mode .confirm-order-btn { font-size: 17px; padding: 16px; }
+.phone-screen.simple-mode .search-placeholder,
+.phone-screen.simple-mode .search-input-wrapper input { font-size: 16px; }

@@ -52,7 +52,7 @@
         </div>
 
         <!-- 1-Tap Reorder Card -->
-        <div class="reorder-card" onclick="App.startReorder()">
+        <div class="reorder-card" id="home-reorder-card" style="display:none" onclick="App.startReorder()">
           <div class="reorder-card-icon"><i data-lucide="rotate-ccw" style="width:24px;height:24px"></i></div>
           <div class="reorder-card-body">
             <div class="reorder-card-title">আপনার শেষ অর্ডারটি আবার দিন</div>
@@ -1230,6 +1230,11 @@
             <span class="label">ভাষা</span>
             <i data-lucide="chevron-right" class="arrow"></i>
           </button>
+          <div class="account-menu-item simple-toggle-row" onclick="App.toggleSimpleMode()">
+            <i data-lucide="type" class="icon"></i>
+            <span class="label">সহজ মোড<small>বড় লেখা, সহজ ব্যবহার</small></span>
+            <span class="simple-switch" id="simple-mode-toggle"><span class="knob"></span></span>
+          </div>
         </div>
         <div class="account-section-divider"></div>
         <div class="account-section">
@@ -1559,6 +1564,53 @@
       </section>
 
       <!-- ════════════════════════════════════════
+           SCREEN 24: SIMPLE MODE HOME (Idea 9)
+           ════════════════════════════════════════ -->
+      <section id="screen-simple-home" class="screen">
+        <div class="simple-topbar">
+          <div class="simple-store">
+            <i data-lucide="store" style="width:20px;height:20px"></i>
+            <span>Shahi General Store</span>
+          </div>
+          <span class="simple-badge"><i data-lucide="check-circle" style="width:14px;height:14px"></i> সহজ মোড চালু</span>
+        </div>
+
+        <button class="simple-back-btn" onclick="App.setSimpleMode(false)">
+          <i data-lucide="toggle-left" style="width:20px;height:20px"></i> ফুল মোডে ফিরে যান
+        </button>
+
+        <div class="simple-greeting">আপনি কী করতে চান?</div>
+
+        <div class="simple-tiles">
+          <button class="simple-tile" onclick="App.navigateTo('search')">
+            <i data-lucide="search"></i>
+            <span>পণ্য খুঁজুন</span>
+          </button>
+          <button class="simple-tile" onclick="App.startReorder()">
+            <i data-lucide="rotate-ccw"></i>
+            <span>আবার অর্ডার করুন</span>
+          </button>
+          <button class="simple-tile" onclick="App.navigateTo('order-list')">
+            <i data-lucide="package"></i>
+            <span>আমার অর্ডার</span>
+          </button>
+          <button class="simple-tile" onclick="App.startVoiceOrder()">
+            <i data-lucide="mic"></i>
+            <span>মুখে বলে অর্ডার</span>
+          </button>
+          <button class="simple-tile" onclick="App.navigateTo('cart')">
+            <i data-lucide="shopping-cart"></i>
+            <span>কার্ট ও চেকআউট</span>
+          </button>
+          <button class="simple-tile simple-tile-help" onclick="App.openSimpleHelp()">
+            <i data-lucide="phone-call"></i>
+            <span>সাহায্য / কল করুন</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ════════════════════════════════════════
            SCREEN 23: VOICE ORDER REVIEW (Idea 1)
            ════════════════════════════════════════ -->
       <section id="screen-voice-review" class="screen">
@@ -1597,6 +1649,11 @@
       <button class="drawer-menu-item" data-navigate="account">
         <i data-lucide="user" class="menu-icon"></i>
         <span class="menu-label">একাউন্ট ও সেটিংস</span>
+        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-tertiary);margin-left:auto"></i>
+      </button>
+      <button class="drawer-menu-item" onclick="App.closeDrawer();App.setSimpleMode(true)">
+        <i data-lucide="type" class="menu-icon"></i>
+        <span class="menu-label">সহজ মোড চালু করুন</span>
         <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-tertiary);margin-left:auto"></i>
       </button>
       <button class="drawer-menu-item" data-navigate="order-list">
@@ -1729,6 +1786,36 @@
         <span class="cart-badge">8</span>
       </button>
     </nav>
+
+    <!-- ── Simplified Bottom Navigation (Simple Mode) ── -->
+    <nav class="simple-bottom-nav" id="simple-bottom-nav" style="display:none">
+      <button class="nav-item active" data-screen="simple-home" onclick="App.navigateTo('simple-home')">
+        <i data-lucide="home" class="nav-icon"></i>
+        <span class="nav-label">হোম</span>
+      </button>
+      <button class="nav-item" data-screen="search" onclick="App.navigateTo('search')">
+        <i data-lucide="search" class="nav-icon"></i>
+        <span class="nav-label">খুঁজুন</span>
+      </button>
+      <button class="nav-item" data-screen="order-list" onclick="App.navigateTo('order-list')">
+        <i data-lucide="package" class="nav-icon"></i>
+        <span class="nav-label">অর্ডার</span>
+      </button>
+      <button class="nav-item" onclick="App.openSimpleHelp()">
+        <i data-lucide="phone-call" class="nav-icon"></i>
+        <span class="nav-label">সাহায্য</span>
+      </button>
+    </nav>
+
+    <!-- ── Simple Mode Help Sheet ── -->
+    <div class="bottom-sheet-overlay" id="simple-help-overlay" onclick="App.closeSimpleHelp()"></div>
+    <div class="bottom-sheet simple-help-sheet" id="simple-help-sheet">
+      <div class="bottom-sheet-handle"></div>
+      <h3 class="bottom-sheet-title">সাহায্য দরকার?</h3>
+      <p class="simple-help-text">আমরা আপনাকে সাহায্য করতে প্রস্তুত। সরাসরি কথা বলুন বা মেসেজ করুন।</p>
+      <a class="simple-help-btn call" href="tel:16793"><i data-lucide="phone" style="width:22px;height:22px"></i> কল করুন (১৬৭৯৩)</a>
+      <button class="simple-help-btn msg" onclick="App.closeSimpleHelp()"><i data-lucide="message-circle" style="width:22px;height:22px"></i> মেসেজ করুন</button>
+    </div>
 
     <!-- Passive editable-order status pill (floats above bottom nav, Home only) -->
     <div class="home-order-status" id="home-order-status" style="display:none" data-navigate="order-success">
