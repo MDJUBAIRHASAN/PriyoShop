@@ -26,11 +26,32 @@
     modifyRemaining: 0,
     orderLocked: false,
     // Reconciled lines built from lastOrder when retailer taps 1-Tap Reorder.
-    reorderItems: []
+    reorderItems: [],
+    // App-exclusive reward system (Idea 8).
+    rewards: {
+      points: 2340,
+      lifetime: 2340,
+      earnedThisOrder: 0,
+      tierJustUpgraded: null,
+      voucher: null,
+      history: [
+        { label: 'অর্ডার #26056305', points: 142, date: '১৫-মে-২০২৬' },
+        { label: 'অর্ডার #25981120', points: 98, date: '০৮-মে-২০২৬' },
+        { label: 'রেফারেল বোনাস', points: 50, date: '০২-মে-২০২৬' }
+      ]
+    }
   };
 
   // Modify-after-order window length (faithful 30 min). Use "demo: lock now" link to skip.
   const MODIFY_WINDOW_SECONDS = 1800;
+
+  // ── Reward system (Idea 8) ──
+  const POINTS_PER_TAKA = 100; // 1 point per ৳100 of in-app order value
+  const TIERS = [
+    { name: 'Silver',   bn: 'সিলভার',   min: 0,     benefit: '১% ক্যাশব্যাক' },
+    { name: 'Gold',     bn: 'গোল্ড',     min: 4000,  benefit: '২% ক্যাশব্যাক + ফ্রি ডেলিভারি' },
+    { name: 'Platinum', bn: 'প্ল্যাটিনাম', min: 10000, benefit: '৩% ক্যাশব্যাক + অগ্রাধিকার সাপোর্ট' }
+  ];
 
   // ── 1-Tap Reorder: the retailer's previous order (their weekly pattern) ──
   // status flags drive the reconciliation screen:
@@ -60,6 +81,8 @@
     renderCart();
     updateCartBadge();
     initReorder();
+    renderRewards();
+    localizeNumerals();
     adjustScale();
     window.addEventListener('resize', adjustScale);
     navigateTo('home');
@@ -126,13 +149,20 @@
       setTimeout(() => triggerConfetti(screenId), 400);
     }
 
-    // New order placed → reset the modify window fresh.
+    // New order placed → reset the modify window fresh + award reward points.
     if (screenId === 'order-success-payment') {
       state.orderLocked = false;
+      awardPointsForOrder();
     }
 
     if (screenId === 'order-success') {
       startModifyWindow();
+      // Celebrate a tier upgrade triggered by this order.
+      if (state.rewards.tierJustUpgraded) {
+        const t = state.rewards.tierJustUpgraded;
+        setTimeout(() => showToast('অভিনন্দন! আপনি এখন ' + t.bn + ' টিয়ার — নতুন সুবিধা চালু হয়েছে।'), 900);
+        state.rewards.tierJustUpgraded = null;
+      }
     }
   }
 
@@ -213,8 +243,8 @@
                             
                             document.getElementById('detail-name').innerText = name;
                             document.getElementById('detail-header-title').innerText = name.substring(0, 18) + '...';
-                            document.getElementById('detail-price').innerText = '৳' + price.toLocaleString();
-                            document.getElementById('detail-weight').innerText = '(' + weight + ')';
+                            document.getElementById('detail-price').innerText = '৳' + toBn(price.toLocaleString());
+                            document.getElementById('detail-weight').innerText = '(' + toBn(weight) + ')';
                             document.getElementById('detail-brand').innerText = 'ব্র্যান্ডঃ ' + name.split(' ')[0];
                             document.getElementById('detail-description').innerHTML = 
                                 nameEn + ' - ' + weight + '.<br>' +
@@ -387,6 +417,14 @@
     if (window.lucide) lucide.createIcons();
   }
 
+  // Convert English digits to Bangla numerals in static price/weight labels.
+  // Idempotent (toBn only maps 0-9), safe to re-run.
+  function localizeNumerals() {
+    document.querySelectorAll('.product-price, .product-weight').forEach(el => {
+      el.textContent = toBn(el.textContent);
+    });
+  }
+
   // ── Cart Logic ──
   function renderCart() {
     const cartList = document.getElementById('cart-items-list');
@@ -399,12 +437,12 @@
         </div>
         <div class="cart-item-details">
           <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-weight">ওজনঃ ${item.weight} • <span class="cart-item-price">৳${item.price.toLocaleString()}.0</span></div>
-          <div class="cart-item-qty-badge">আইটেমঃ ${item.qty}</div>
+          <div class="cart-item-weight">ওজনঃ ${toBn(item.weight)} • <span class="cart-item-price">৳${toBn(item.price.toLocaleString())}.০</span></div>
+          <div class="cart-item-qty-badge">আইটেমঃ ${toBn(item.qty)}</div>
           <div class="cart-item-qty">
             <div class="qty-selector">
               <button class="qty-btn" onclick="App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
-              <span class="qty-value">${item.qty}</span>
+              <span class="qty-value">${toBn(item.qty)}</span>
               <button class="qty-btn" onclick="App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
             </div>
           </div>
@@ -468,15 +506,20 @@
     const total = getCartTotal();
     const shipping = 0;
     const discount = -80;
-    const netTotal = total + shipping + discount;
+    const voucher = state.rewards.voucher ? state.rewards.voucher.amount : 0;
+    const netTotal = Math.max(0, total + shipping + discount - voucher);
 
     const summaryEl = document.getElementById('cart-summary');
     if (summaryEl) {
+      const voucherRow = voucher
+        ? `<div class="cart-summary-row" style="color:var(--success)"><span>ক্যাশব্যাক ভাউচার</span><span>-৳${toBn(voucher.toLocaleString())}</span></div>`
+        : '';
       summaryEl.innerHTML = `
-        <div class="cart-summary-row"><span>সর্বমোট বিল</span><span>৳${total.toLocaleString()}</span></div>
+        <div class="cart-summary-row"><span>সর্বমোট বিল</span><span>৳${toBn(total.toLocaleString())}</span></div>
         <div class="cart-summary-row"><span>ডেলিভারি চার্জ</span><span>+৳০</span></div>
         <div class="cart-summary-row"><span>ডিসকাউন্ট</span><span>-৳৮০</span></div>
-        <div class="cart-summary-row total"><span>সর্বমোট</span><span>৳${netTotal.toLocaleString()}</span></div>
+        ${voucherRow}
+        <div class="cart-summary-row total"><span>সর্বমোট</span><span>৳${toBn(netTotal.toLocaleString())}</span></div>
       `;
     }
   }
@@ -484,11 +527,11 @@
   function updateCartBadge() {
     const totalItems = state.cartItems.reduce((sum, item) => sum + item.qty, 0);
     document.querySelectorAll('.cart-badge').forEach(badge => {
-      badge.textContent = totalItems;
+      badge.textContent = toBn(totalItems);
       badge.style.display = totalItems > 0 ? 'flex' : 'none';
     });
     document.querySelectorAll('.header-action-btn .badge').forEach(badge => {
-      badge.textContent = totalItems;
+      badge.textContent = toBn(totalItems);
     });
   }
 
@@ -499,22 +542,27 @@
     const total = getCartTotal();
     const discount = -80;
     const delivery = 80;
-    const net = total + discount + delivery;
+    const voucher = state.rewards.voucher ? state.rewards.voucher.amount : 0;
+    const net = Math.max(0, total + discount + delivery - voucher);
 
     checkoutItems.innerHTML = state.cartItems.map(item => `
       <div class="checkout-item-row">
-        <span class="item-name">${item.name}-${item.weight}(${item.qty})</span>
-        <span class="item-price">৳${(item.price * item.qty).toLocaleString()}</span>
+        <span class="item-name">${item.name}-${toBn(item.weight)}(${toBn(item.qty)})</span>
+        <span class="item-price">৳${toBn((item.price * item.qty).toLocaleString())}</span>
       </div>
     `).join('');
 
     const checkoutTotals = document.getElementById('checkout-totals');
     if (checkoutTotals) {
+      const voucherRow = voucher
+        ? `<div class="checkout-total-row" style="color:var(--success)"><span>ক্যাশব্যাক ভাউচার</span><span>-৳${toBn(voucher.toLocaleString())}</span></div>`
+        : '';
       checkoutTotals.innerHTML = `
-        <div class="checkout-total-row"><span>সর্বমোট বিল</span><span>৳${total.toLocaleString()}</span></div>
+        <div class="checkout-total-row"><span>সর্বমোট বিল</span><span>৳${toBn(total.toLocaleString())}</span></div>
         <div class="checkout-total-row"><span>ডিসকাউন্ট</span><span>-৳৮০</span></div>
-        <div class="checkout-total-row"><span>ডেলিভারি চার্জ</span><span>+৳${delivery}</span></div>
-        <div class="checkout-total-row final"><span>মোট মূল্য</span><span>৳${net.toLocaleString()}</span></div>
+        <div class="checkout-total-row"><span>ডেলিভারি চার্জ</span><span>+৳${toBn(delivery)}</span></div>
+        ${voucherRow}
+        <div class="checkout-total-row final"><span>মোট মূল্য</span><span>৳${toBn(net.toLocaleString())}</span></div>
       `;
     }
   }
@@ -529,9 +577,9 @@
         </div>
         <div class="cart-item-details">
           <div class="cart-item-name" style="font-family:var(--font-en)">${item.nameEn}</div>
-          <div class="cart-item-price">• ৳${(item.price * item.qty).toLocaleString()} টাকা</div>
+          <div class="cart-item-price">• ৳${toBn((item.price * item.qty).toLocaleString())} টাকা</div>
         </div>
-        <div class="qty-value" style="position:absolute;right:16px;bottom:16px;border:1px solid #e0e0e0;border-radius:6px;padding:4px 14px;font-size:13px">${item.qty}</div>
+        <div class="qty-value" style="position:absolute;right:16px;bottom:16px;border:1px solid #e0e0e0;border-radius:6px;padding:4px 14px;font-size:13px">${toBn(item.qty)}</div>
       </div>
     `).join('');
     refreshIcons();
@@ -547,11 +595,11 @@
         </div>
         <div class="repeat-item-details">
           <div class="repeat-item-name">${item.name}</div>
-          <div class="repeat-item-info">${item.weight} • <span class="repeat-item-price">৳${item.price.toLocaleString()}</span></div>
+          <div class="repeat-item-info">${toBn(item.weight)} • <span class="repeat-item-price">৳${toBn(item.price.toLocaleString())}</span></div>
           <div class="cart-item-qty" style="margin-top:8px">
             <div class="qty-selector">
               <button class="qty-btn"><i data-lucide="minus" style="width:13px;height:13px"></i></button>
-              <span class="qty-value">${item.qty}</span>
+              <span class="qty-value">${toBn(item.qty)}</span>
               <button class="qty-btn"><i data-lucide="plus" style="width:13px;height:13px"></i></button>
             </div>
           </div>
@@ -651,11 +699,11 @@
           </div>
           <div class="cart-item-details">
             <div class="cart-item-name">${item.name}</div>
-            <div class="cart-item-weight">ওজনঃ ${item.weight} • <span class="cart-item-price">৳${item.price.toLocaleString()}.0</span></div>
+            <div class="cart-item-weight">ওজনঃ ${toBn(item.weight)} • <span class="cart-item-price">৳${toBn(item.price.toLocaleString())}.০</span></div>
             <div class="cart-item-qty">
               <div class="qty-selector">
                 <button class="qty-btn" onclick="App.changeQty(${item.id}, -1)"><i data-lucide="minus" style="width:13px;height:13px;pointer-events:none"></i></button>
-                <span class="qty-value">${item.qty}</span>
+                <span class="qty-value">${toBn(item.qty)}</span>
                 <button class="qty-btn" onclick="App.changeQty(${item.id}, 1)"><i data-lucide="plus" style="width:13px;height:13px;pointer-events:none"></i></button>
               </div>
             </div>
@@ -776,7 +824,7 @@
           </div>
           <div class="reorder-item-details">
             <div class="cart-item-name">${item.name}</div>
-            <div class="cart-item-weight">ওজনঃ ${item.weight} • <span class="cart-item-price">৳${toBn(item.price.toLocaleString())}</span></div>
+            <div class="cart-item-weight">ওজনঃ ${toBn(item.weight)} • <span class="cart-item-price">৳${toBn(item.price.toLocaleString())}</span></div>
             ${priceBadge}
             ${item.swapped ? '<span class="reorder-badge swapped">বিকল্প যোগ হয়েছে</span>' : ''}
             <div class="cart-item-qty">
@@ -841,6 +889,138 @@
     }));
     renderCart();
     navigateTo('checkout');
+  }
+
+  // ── Reward System (Idea 8) ──
+
+  function tierFor(points) {
+    let t = TIERS[0];
+    for (const tier of TIERS) if (points >= tier.min) t = tier;
+    return t;
+  }
+
+  // Next tier + points still needed, or null at top tier.
+  function nextTier(points) {
+    const idx = TIERS.indexOf(tierFor(points));
+    if (idx >= TIERS.length - 1) return null;
+    const next = TIERS[idx + 1];
+    return { tier: next, remaining: next.min - points };
+  }
+
+  function computeEarned(total) {
+    return Math.floor(total / POINTS_PER_TAKA);
+  }
+
+  // Net order value mirrors renderCheckout: total - 80 discount + 80 delivery - voucher.
+  function orderNetTotal() {
+    const total = getCartTotal();
+    const voucher = state.rewards.voucher ? state.rewards.voucher.amount : 0;
+    return Math.max(0, total - 80 + 80 - voucher);
+  }
+
+  // Award points once when an order is placed (on reaching order-success-payment).
+  function awardPointsForOrder() {
+    const r = state.rewards;
+    const net = orderNetTotal();
+    const earned = computeEarned(net);
+    const beforeTier = tierFor(r.lifetime);
+
+    r.earnedThisOrder = earned;
+    r.points += earned;
+    r.lifetime += earned;
+    r.history.unshift({ label: 'নতুন অর্ডার', points: earned, date: todayBn() });
+
+    const afterTier = tierFor(r.lifetime);
+    r.tierJustUpgraded = (afterTier !== beforeTier) ? afterTier : null;
+
+    // Voucher is single-use — consumed by this order.
+    r.voucher = null;
+
+    renderRewards();
+  }
+
+  function todayBn() {
+    return '২৩-মে-২০২৬';
+  }
+
+  function redeem(cost) {
+    const r = state.rewards;
+    if (r.points < cost) {
+      showToast('পর্যাপ্ত পয়েন্ট নেই');
+      return;
+    }
+    r.points -= cost;
+    r.voucher = { amount: cost };
+    renderRewards();
+    showToast('৳' + toBn(cost.toLocaleString()) + ' ক্যাশব্যাক ভাউচার তৈরি — পরের অর্ডারে প্রযোজ্য');
+  }
+
+  // Paint every rewards surface: home strip, drawer badge, dashboard, success banner.
+  function renderRewards() {
+    const r = state.rewards;
+    const tier = tierFor(r.lifetime);
+    const next = nextTier(r.lifetime);
+    const nextText = next
+      ? next.tier.bn + '-এ পৌঁছাতে আর ' + toBn(next.remaining.toLocaleString()) + ' পয়েন্ট'
+      : 'আপনি সর্বোচ্চ টিয়ারে আছেন!';
+
+    setText('home-points', toBn(r.points.toLocaleString()));
+    setText('home-tier', tier.bn);
+    setText('home-next-tier', nextText);
+    setText('drawer-points', toBn(r.points.toLocaleString()) + ' পয়েন্ট');
+
+    // Dashboard
+    setText('rewards-balance', toBn(r.points.toLocaleString()));
+    setText('rewards-tier', tier.bn + ' টিয়ার');
+    setText('rewards-next', nextText);
+    const bar = document.getElementById('rewards-progress');
+    if (bar) {
+      let pct = 100;
+      if (next) {
+        const span = next.tier.min - tier.min;
+        pct = Math.min(100, Math.round(((r.lifetime - tier.min) / span) * 100));
+      }
+      bar.style.width = pct + '%';
+    }
+
+    // Tier-benefit highlight
+    document.querySelectorAll('#tier-benefits .tier-benefit').forEach(el => {
+      el.classList.toggle('active', el.dataset.tier === tier.name);
+    });
+
+    // Active voucher chip
+    const voucherEl = document.getElementById('rewards-voucher');
+    if (voucherEl) {
+      if (r.voucher) {
+        voucherEl.style.display = 'flex';
+        setText('rewards-voucher-amount', '৳' + toBn(r.voucher.amount.toLocaleString()));
+      } else {
+        voucherEl.style.display = 'none';
+      }
+    }
+
+    // Recent earnings
+    const hist = document.getElementById('rewards-history');
+    if (hist) {
+      hist.innerHTML = r.history.map(h => `
+        <div class="rewards-history-row">
+          <div>
+            <div class="rh-label">${h.label}</div>
+            <div class="rh-date">${h.date} • মেয়াদ ৬ মাস</div>
+          </div>
+          <div class="rh-points">+${toBn(h.points.toLocaleString())}</div>
+        </div>
+      `).join('');
+    }
+
+    // Order-success earned banner
+    setText('points-earned-value', toBn(r.earnedThisOrder.toLocaleString()));
+    setText('points-earned-balance', toBn(r.points.toLocaleString()));
+  }
+
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
   }
 
   // Reusable toast (generalized from showAddedToast).
@@ -959,7 +1139,8 @@
     reorderChangeQty,
     swapAlternative,
     removeReorderItem,
-    proceedReorderCheckout
+    proceedReorderCheckout,
+    redeem
   };
 
 })();

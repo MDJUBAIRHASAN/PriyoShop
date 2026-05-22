@@ -801,7 +801,7 @@
           <h1 class="header-title">কার্ট</h1>
         </div>
         <div id="cart-items-list"></div>
-        <button class="add-more-btn" data-navigate="home">
+        <button class="add-more-btn" data-navigate="all-products">
           <i data-lucide="plus-circle" style="width:18px;height:18px"></i> আরও যোগ করুন
         </button>
         <div class="cart-section-divider"></div>
@@ -900,6 +900,15 @@
             </div>
             <div class="order-detail-row"><span class="label">ক্রেডিট পরিশোধঃ</span><span class="value">N/A</span></div>
             <div class="order-detail-row"><span class="label">স্ট্যাটাসঃ</span><span class="value status">New Order</span></div>
+          </div>
+
+          <!-- Reward points earned (Idea 8) -->
+          <div class="points-earned-banner" id="points-earned-banner">
+            <i data-lucide="gift" style="width:24px;height:24px;color:var(--primary)"></i>
+            <div>
+              <div class="points-earned-title">আপনি <span id="points-earned-value">০</span> পয়েন্ট অর্জন করেছেন!</div>
+              <div class="points-earned-sub">মোট ব্যালেন্স: <span id="points-earned-balance">০</span> পয়েন্ট</div>
+            </div>
           </div>
 
           <!-- Modify-window (active for 30 min after placement) -->
@@ -1241,12 +1250,59 @@
         </div>
         <div class="offer-points-header">
           <div class="offer-points-label">আপনার বর্তমান পয়েন্ট</div>
-          <div class="offer-points-value"><i data-lucide="gift" style="width:22px;height:22px"></i> 0</div>
-          <div class="offer-points-rate">১ প্রিয় পয়েন্ট = ৳১.০</div>
+          <div class="offer-points-value"><i data-lucide="gift" style="width:22px;height:22px"></i> <span id="rewards-balance">০</span></div>
+          <div class="rewards-tier-badge"><i data-lucide="award" style="width:14px;height:14px"></i> <span id="rewards-tier">সিলভার টিয়ার</span></div>
+          <div class="rewards-progress-track"><div class="rewards-progress-fill" id="rewards-progress" style="width:0%"></div></div>
+          <div class="rewards-next" id="rewards-next">পরবর্তী টিয়ারে আর কিছু পয়েন্ট</div>
+          <div class="offer-points-rate">১ প্রিয় পয়েন্ট = ৳১.০ • প্রতি ৳১০০ অর্ডারে ১ পয়েন্ট</div>
         </div>
-        <button class="points-history-btn">
-          <i data-lucide="history" style="width:16px;height:16px"></i> পয়েন্ট হিস্ট্রি
-        </button>
+
+        <!-- Active cashback voucher -->
+        <div class="rewards-voucher-chip" id="rewards-voucher" style="display:none">
+          <i data-lucide="ticket" style="width:18px;height:18px;color:var(--success)"></i>
+          <span><b id="rewards-voucher-amount">৳০</b> ক্যাশব্যাক ভাউচার — পরের অর্ডারে প্রযোজ্য</span>
+        </div>
+
+        <!-- Tier benefits -->
+        <div class="rewards-section-title">টিয়ার সুবিধা</div>
+        <div class="tier-benefits" id="tier-benefits">
+          <div class="tier-benefit" data-tier="Silver">
+            <div class="tier-benefit-name">সিলভার</div>
+            <div class="tier-benefit-desc">১% ক্যাশব্যাক</div>
+          </div>
+          <div class="tier-benefit" data-tier="Gold">
+            <div class="tier-benefit-name">গোল্ড</div>
+            <div class="tier-benefit-desc">২% ক্যাশব্যাক + ফ্রি ডেলিভারি</div>
+          </div>
+          <div class="tier-benefit" data-tier="Platinum">
+            <div class="tier-benefit-name">প্ল্যাটিনাম</div>
+            <div class="tier-benefit-desc">৩% ক্যাশব্যাক + অগ্রাধিকার সাপোর্ট</div>
+          </div>
+        </div>
+
+        <!-- Redeem points -->
+        <div class="rewards-section-title">পয়েন্ট রিডিম করুন</div>
+        <div class="redeem-tiles">
+          <button class="redeem-tile" onclick="App.redeem(100)">
+            <div class="redeem-amount">৳১০০</div>
+            <div class="redeem-cost">১০০ পয়েন্ট</div>
+          </button>
+          <button class="redeem-tile" onclick="App.redeem(500)">
+            <div class="redeem-amount">৳৫০০</div>
+            <div class="redeem-cost">৫০০ পয়েন্ট</div>
+          </button>
+          <button class="redeem-tile" onclick="App.redeem(1000)">
+            <div class="redeem-amount">৳১০০০</div>
+            <div class="redeem-cost">১০০০ পয়েন্ট</div>
+          </button>
+        </div>
+
+        <!-- Recent earnings -->
+        <div class="rewards-section-title">সাম্প্রতিক অর্জন</div>
+        <div id="rewards-history"></div>
+        <div class="rewards-expiry-note">
+          <i data-lucide="clock" style="width:14px;height:14px"></i> পয়েন্ট অর্জনের ৬ মাস পর মেয়াদ শেষ হয়। নিয়মিত ব্যবহার করুন।
+        </div>
         <div class="faq-section">
           <h3 class="faq-title">FAQ</h3>
           <div class="faq-item">
@@ -1471,7 +1527,7 @@
         <div class="drawer-avatar">J</div>
         <div class="drawer-user-name">Jbvn</div>
         <div class="drawer-user-phone">+8801521797368</div>
-        <div class="drawer-points-badge"><i data-lucide="gift" style="width:14px;height:14px"></i> 0 পয়েন্ট</div>
+        <div class="drawer-points-badge"><i data-lucide="gift" style="width:14px;height:14px"></i> <span id="drawer-points">0 পয়েন্ট</span></div>
       </div>
       <div class="drawer-credit-banner" data-navigate="credit-onboarding">
         <span><i data-lucide="credit-card" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"></i>বাকির তথ্য</span>
