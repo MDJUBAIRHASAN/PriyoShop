@@ -229,12 +229,19 @@
           <a class="section-link" data-navigate="brands">সবগুলো <i data-lucide="chevron-right" style="width:13px;height:13px;vertical-align:middle"></i></a>
         </div>
         <div class="brand-scroll">
-          <div class="brand-item" style="padding:0;background:#fff;" ><img src="./images/brands/rupchanda.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" ><img src="./images/brands/teer.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" ><img src="./images/brands/aci.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" ><img src="./images/brands/eshan.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" ><img src="./images/brands/ajinomoto.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" ><img src="./images/brands/fresh.png" style="width:100%;height:100%;object-fit:contain;"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="আকিজ" data-brand-name="আকিজ"><img src="./images/brands/Akij Essential.png" alt="Akij"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="রূপচাঁদা" data-brand-name="রূপচাঁদা"><img src="./images/brands/rupchanda.png" alt="Rupchanda"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="তীর" data-brand-name="তীর"><img src="./images/brands/teer.png" alt="Teer"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="ফ্রেশ" data-brand-name="ফ্রেশ"><img src="./images/brands/fresh.png" alt="Fresh"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="ইগলু" data-brand-name="ইগলু"><img src="./images/brands/igloo.png" alt="Igloo"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="পুষ্টি" data-brand-name="পুষ্টি"><img src="./images/brands/pusti.png" alt="Pusti"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="এসিআই" data-brand-name="এসিআই"><img src="./images/brands/aci.png" alt="ACI"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="রাঁধুনী" data-brand-name="রাঁধুনী"><img src="./images/brands/radhuni.png" alt="Radhuni"></div>
+          <div class="brand-item brand-logo" data-navigate="all-products" data-brand-target="আজিনোমতো" data-brand-name="আজিনোমতো"><img src="./images/brands/ajinomoto.png" alt="Ajinomoto"></div>
+          <div class="brand-item brand-text" style="color:#1B5E20" data-navigate="all-products" data-brand-target="ঈশান" data-brand-name="ঈশান">ঈশান</div>
+          <div class="brand-item brand-text" style="color:#2E7D32" data-navigate="all-products" data-brand-target="প্রাণ" data-brand-name="প্রাণ">প্রাণ</div>
+          <div class="brand-item brand-text" style="color:#C62828" data-navigate="all-products" data-brand-target="আমিন" data-brand-name="আমিন">আমিন</div>
+          <div class="brand-item brand-text" style="color:#1565C0" data-navigate="all-products" data-brand-target="নজরুল" data-brand-name="নজরুল">নজরুল</div>
         </div>
 
         <!-- Info Banner -->
@@ -762,26 +769,26 @@
         </div>
         <div class="related-products-section">
           <div class="related-products-grid">
-            <div class="product-card" onclick="App.navigateTo('product-detail')">
+            <div class="product-card" data-navigate="product-detail">
               <div class="product-image" style="background:#fff;overflow:hidden;">
                 <img src="./images/rice_nazrul.png" style="width:100%;height:100%;object-fit:cover;" alt="Product">
                 <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:13,name:'নজরুল মিনিকেট চাল ২৫ কেজি',nameEn:'Nazrul Rice 25kg',weight:'25 kg',price:1500,image:'./images/rice_nazrul.png'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
               </div>
               <div class="product-info">
                 <span class="product-weight">25 kg</span>
-                <h3 class="product-name">নজরুল মিনিকেট চাল- ২৫কেজি</h3>
+                <h3 class="product-name">নজরুল মিনিকেট চাল ২৫ কেজি</h3>
                 <span class="product-price">1,500</span>
               </div>
             </div>
-            <div class="product-card" onclick="App.navigateTo('product-detail')">
+            <div class="product-card" data-navigate="product-detail">
               <div class="product-image" style="background:#fff;overflow:hidden;">
-                <img src="./images/rice_amin.png" style="width:100%;height:100%;object-fit:cover;" alt="Product">
-                <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:14,name:'ঈশান মিনিকেট চাল ৫০ কেজি',nameEn:'Eshan Rice 50kg',weight:'50 kg',price:890,image:'./images/rice_amin.png'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
+                <img src="./images/rice_amin_25.png" style="width:100%;height:100%;object-fit:cover;" alt="Product">
+                <button class="add-btn" onclick="event.stopPropagation();App.addToCart({id:7,name:'আমিন আটাশ চাল ২৫ কেজি',nameEn:'Amin Athash Rice 25kg',weight:'25 kg',price:1020,image:'./images/rice_amin_25.png'})"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
               </div>
               <div class="product-info">
-                <span class="product-weight">50 kg</span>
-                <h3 class="product-name">ঈশান মিনিকেট চাল ৫০ কেজি</h3>
-                <span class="product-price">890</span>
+                <span class="product-weight">25 kg</span>
+                <h3 class="product-name">আমিন আটাশ চাল ২৫ কেজি</h3>
+                <span class="product-price">1,020</span>
               </div>
             </div>
           </div>
@@ -1283,6 +1290,17 @@
             </button>
           </div>
         </div>
+
+        <div class="notif-card" onclick="App.openBhai()">
+          <div class="notif-card-icon" style="background:#E8F5E9;color:var(--success)"><i data-lucide="headphones" style="width:20px;height:20px"></i></div>
+          <div class="notif-card-body">
+            <div class="notif-card-title">Digital Bhai সাহায্য করতে প্রস্তুত</div>
+            <div class="notif-card-text">অর্ডার শেষ করতে পারেননি? যেকোনো সাহায্যের জন্য Digital Bhai-এর সাথে কথা বলুন।</div>
+            <button class="notif-card-btn" onclick="event.stopPropagation();App.openBhai()">
+              <i data-lucide="message-circle" style="width:14px;height:14px"></i> চ্যাট শুরু করুন
+            </button>
+          </div>
+        </div>
       </section>
 
       <!-- ════════════════════════════════════════
@@ -1306,6 +1324,24 @@
         <div class="rewards-voucher-chip" id="rewards-voucher" style="display:none">
           <i data-lucide="ticket" style="width:18px;height:18px;color:var(--success)"></i>
           <span><b id="rewards-voucher-amount">৳০</b> ক্যাশব্যাক ভাউচার — পরের অর্ডারে প্রযোজ্য</span>
+        </div>
+
+        <!-- Spin-the-Wheel reward (Idea 4) -->
+        <div class="rewards-section-title">রিওয়ার্ড স্পিন</div>
+        <div class="spin-card">
+          <div class="spin-card-top">
+            <div class="spin-card-icon"><i data-lucide="gift" style="width:24px;height:24px"></i></div>
+            <div class="spin-card-body">
+              <div class="spin-card-title">৫টি অর্ডারে একটি রিওয়ার্ড স্পিন!</div>
+              <div class="spin-card-label" id="spin-progress-label">পরবর্তী স্পিন আনলক করতে আর ৫টি অর্ডার করুন</div>
+            </div>
+            <span class="spin-card-count" id="spin-count">০/৫</span>
+          </div>
+          <div class="spin-progress-track"><div class="spin-progress-fill" id="spin-progress" style="width:0%"></div></div>
+          <button class="spin-cta disabled" id="spin-cta" onclick="App.openSpin()">
+            <i data-lucide="gift" style="width:18px;height:18px"></i> স্পিন করুন <span id="spin-available" class="spin-avail"></span>
+          </button>
+          <span class="spin-demo-link" onclick="App.demoUnlockSpin()">ডেমো: এখনই আনলক করুন</span>
         </div>
 
         <!-- Tier benefits -->
@@ -1564,6 +1600,137 @@
       </section>
 
       <!-- ════════════════════════════════════════
+           SCREEN 27: DIGITAL BHAI CHAT (Idea 2)
+           ════════════════════════════════════════ -->
+      <section id="screen-bhai" class="screen">
+        <div class="app-header bhai-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <div class="bhai-avatar">ক</div>
+          <div class="bhai-head-info">
+            <div class="bhai-head-name">করিম ভাই</div>
+            <div class="bhai-status" id="bhai-status">🟢 অনলাইন · সাধারণত ২ মিনিটে উত্তর</div>
+          </div>
+          <button class="bhai-call-btn" onclick="App.callBhai()" aria-label="কল করুন"><i data-lucide="phone" style="width:20px;height:20px"></i></button>
+        </div>
+
+        <!-- Simulated call screen -->
+        <div class="bhai-call" id="bhai-call">
+          <div class="bhai-call-avatar">ক</div>
+          <div class="bhai-call-name">করিম ভাই</div>
+          <div class="bhai-call-status" id="bhai-call-status">কল করা হচ্ছে…</div>
+          <div class="bhai-call-timer" id="bhai-call-timer"></div>
+          <button class="bhai-call-end" onclick="App.endBhaiCall()"><i data-lucide="phone-off" style="width:26px;height:26px;color:#fff"></i></button>
+        </div>
+        <div class="bhai-messages" id="bhai-messages"></div>
+        <div class="bhai-quick" id="bhai-quick"></div>
+        <div class="bhai-inputbar">
+          <button class="bhai-mic" onclick="App.sendBhaiVoice()" aria-label="ভয়েস নোট"><i data-lucide="mic" style="width:20px;height:20px"></i></button>
+          <input type="text" id="bhai-input" placeholder="এখানে লিখুন..." autocomplete="off" onkeydown="if(event.key==='Enter')App.sendBhaiText()">
+          <button class="bhai-send" onclick="App.sendBhaiText()" aria-label="পাঠান"><i data-lucide="send" style="width:18px;height:18px"></i></button>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════
+           SCREEN 26: LOCAL BAZAAR COMMUNITY (Idea 3)
+           ════════════════════════════════════════ -->
+      <section id="screen-bazaar" class="screen">
+        <div class="app-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <h1 class="header-title">বাজার কমিউনিটি</h1>
+        </div>
+
+        <!-- Join state -->
+        <div id="bazaar-join">
+          <div class="bazaar-join-hero">
+            <div class="bazaar-join-icon"><i data-lucide="users" style="width:38px;height:38px;color:#fff"></i></div>
+            <h2 class="bazaar-join-title">আপনার এলাকার বাজারে যোগ দিন</h2>
+            <p class="bazaar-join-sub"><b id="bazaar-join-name">ধানমন্ডি বাজার</b> — <span id="bazaar-join-members">৪২</span> জন দোকানদার ইতিমধ্যে যুক্ত</p>
+            <button class="btn-primary" onclick="App.joinBazaar()">এই বাজারে যোগ দিন</button>
+            <p class="bazaar-join-note">প্রতিবেশী দোকানদারদের সাথে এগিয়ে যান — র‍্যাঙ্ক, ব্যাজ ও চ্যালেঞ্জে অংশ নিন।</p>
+          </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="bazaar-dashboard" style="display:none">
+          <div class="bazaar-group-head">
+            <div><div class="bazaar-group-name" id="bazaar-group-name">ধানমন্ডি বাজার কমিউনিটি</div>
+            <div class="bazaar-group-members" id="bazaar-members-count">৪২ জন রিটেইলার</div></div>
+            <i data-lucide="users" style="width:22px;height:22px;color:var(--primary)"></i>
+          </div>
+
+          <div class="bazaar-rank-card">
+            <div class="bz-rank-big" id="bazaar-rank">#৭</div>
+            <div class="bz-rank-mid">
+              <div class="bz-rank-shop" id="bazaar-rank-shop">Shahi General Store</div>
+              <div class="bz-rank-label">এই বাজারে আপনার অবস্থান</div>
+            </div>
+            <div class="bz-rank-change" id="bazaar-rank-change">↑৩ এই সপ্তাহে</div>
+          </div>
+
+          <div class="bazaar-section-title">🏆 মার্কেট লিডারবোর্ড</div>
+          <div id="bazaar-leaders"></div>
+
+          <div class="bazaar-section-title">🎖️ কমিউনিটি অর্জন</div>
+          <div class="bazaar-badges" id="bazaar-badges"></div>
+
+          <div class="bazaar-section-title">🎯 চলমান চ্যালেঞ্জ</div>
+          <div id="bazaar-challenges"></div>
+
+          <div class="bazaar-section-title">📣 স্থানীয় ক্যাম্পেইন</div>
+          <div id="bazaar-campaigns"></div>
+
+          <div class="bazaar-section-title">📜 নিয়মাবলী (স্বচ্ছ)</div>
+          <div class="faq-section" style="padding:0 16px 16px">
+            <div class="faq-item">
+              <button class="faq-question"><i data-lucide="help-circle" class="star-icon"></i><span class="question-text">র‍্যাঙ্কিং কীভাবে হিসাব হয়?</span><i data-lucide="plus" class="expand-icon"></i></button>
+              <div class="faq-answer">প্রতিটি সম্পন্ন অ্যাপ অর্ডার, ধারাবাহিকতা ও চ্যালেঞ্জ অংশগ্রহণের ভিত্তিতে পয়েন্ট যোগ হয়। বেশি পয়েন্ট = উপরের র‍্যাঙ্ক।</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question"><i data-lucide="help-circle" class="star-icon"></i><span class="question-text">ব্যাজ ও পুরস্কার কীভাবে পাব?</span><i data-lucide="plus" class="expand-icon"></i></button>
+              <div class="faq-answer">নির্দিষ্ট মাইলফলক পূরণ করলে ব্যাজ আনলক হয় (যেমন টানা অর্ডার, ডিজিটাল গ্রহণ)। শীর্ষ র‍্যাঙ্কধারীরা মাসিক পুরস্কার পান।</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-question"><i data-lucide="shield-alert" class="star-icon"></i><span class="question-text">ভুয়া অংশগ্রহণ ঠেকানো হয় কীভাবে?</span><i data-lucide="plus" class="expand-icon"></i></button>
+              <div class="faq-answer">শুধু প্রকৃত সম্পন্ন অর্ডার গণনা হয়; বাতিল বা ভুয়া অর্ডার বাদ যায়। ম্যানিপুলেশন ধরা পড়লে র‍্যাঙ্ক ও পুরস্কার বাতিল করা হয়।</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════
+           SCREEN 25: SPIN-THE-WHEEL (Idea 4)
+           ════════════════════════════════════════ -->
+      <section id="screen-spin" class="screen">
+        <div class="app-header">
+          <button class="back-btn"><i data-lucide="arrow-left"></i></button>
+          <h1 class="header-title">রিওয়ার্ড স্পিন</h1>
+        </div>
+        <div class="confetti-container"></div>
+        <div class="spin-stage">
+          <div class="spin-tagline">চাকা ঘুরান — নিশ্চিত পুরস্কার!</div>
+          <div class="spin-wheel-wrap">
+            <div class="spin-pointer"></div>
+            <div class="spin-wheel" id="spin-wheel"></div>
+            <div class="spin-hub"><i data-lucide="gift" style="width:22px;height:22px;color:var(--primary)"></i></div>
+          </div>
+          <button class="spin-btn" onclick="App.doSpin()">ঘোরান</button>
+          <p class="spin-note">প্রতিটি স্পিনে নিশ্চিত পুরস্কার — ক্যাশব্যাক, পয়েন্ট বা ফ্রি ডেলিভারি।</p>
+        </div>
+
+        <!-- Result overlay -->
+        <div class="spin-result-overlay" id="spin-result">
+          <div class="spin-result-card">
+            <div class="spin-result-burst"><i data-lucide="party-popper" style="width:46px;height:46px;color:var(--warning)"></i></div>
+            <div class="spin-result-title">অভিনন্দন!</div>
+            <div class="spin-result-sub">আপনি পেয়েছেন</div>
+            <div class="spin-result-prize" id="spin-result-prize">—</div>
+            <div class="spin-result-applied"><i data-lucide="check-circle" style="width:15px;height:15px;color:var(--success)"></i> রিওয়ার্ড আপনার অ্যাকাউন্টে যোগ হয়েছে</div>
+            <button class="btn-primary" onclick="App.closeSpinResult()">দারুণ!</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════
            SCREEN 24: SIMPLE MODE HOME (Idea 9)
            ════════════════════════════════════════ -->
       <section id="screen-simple-home" class="screen">
@@ -1661,6 +1828,11 @@
         <span class="menu-label">অর্ডার লিস্ট</span>
         <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-tertiary);margin-left:auto"></i>
       </button>
+      <button class="drawer-menu-item" onclick="App.closeDrawer();App.openBazaar()">
+        <i data-lucide="users" class="menu-icon"></i>
+        <span class="menu-label">বাজার কমিউনিটি</span>
+        <i data-lucide="chevron-right" style="width:16px;height:16px;color:var(--text-tertiary);margin-left:auto"></i>
+      </button>
       <button class="drawer-menu-item" data-navigate="referral">
         <i data-lucide="link-2" class="menu-icon"></i>
         <span class="menu-label">রেফারেল কোড আছে?</span>
@@ -1754,15 +1926,19 @@
           <div style="width: 24px;"></div>
         </div>
         <div class="brand-grid">
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/rupchanda.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/teer.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/aci.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/eshan.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/ajinomoto.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/fresh.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/pran.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/marks.png" style="width:100%;height:100%;object-fit:contain;"></div>
-          <div class="brand-item" style="padding:0;background:#fff;" data-navigate="all-products" data-category-target="all"><img src="./images/brands/bombay.png" style="width:100%;height:100%;object-fit:contain;"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="আকিজ" data-brand-name="আকিজ"><img src="./images/brands/Akij Essential.png" alt="Akij"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="রূপচাঁদা" data-brand-name="রূপচাঁদা"><img src="./images/brands/rupchanda.png" alt="Rupchanda"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="তীর" data-brand-name="তীর"><img src="./images/brands/teer.png" alt="Teer"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="ফ্রেশ" data-brand-name="ফ্রেশ"><img src="./images/brands/fresh.png" alt="Fresh"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="ইগলু" data-brand-name="ইগলু"><img src="./images/brands/igloo.png" alt="Igloo"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="পুষ্টি" data-brand-name="পুষ্টি"><img src="./images/brands/pusti.png" alt="Pusti"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="এসিআই" data-brand-name="এসিআই"><img src="./images/brands/aci.png" alt="ACI"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="রাঁধুনী" data-brand-name="রাঁধুনী"><img src="./images/brands/radhuni.png" alt="Radhuni"></div>
+          <div class="brand-item" data-navigate="all-products" data-brand-target="আজিনোমতো" data-brand-name="আজিনোমতো"><img src="./images/brands/ajinomoto.png" alt="Ajinomoto"></div>
+          <div class="brand-item brand-text" style="color:#1B5E20" data-navigate="all-products" data-brand-target="ঈশান" data-brand-name="ঈশান">ঈশান</div>
+          <div class="brand-item brand-text" style="color:#2E7D32" data-navigate="all-products" data-brand-target="প্রাণ" data-brand-name="প্রাণ">প্রাণ</div>
+          <div class="brand-item brand-text" style="color:#C62828" data-navigate="all-products" data-brand-target="আমিন" data-brand-name="আমিন">আমিন</div>
+          <div class="brand-item brand-text" style="color:#1565C0" data-navigate="all-products" data-brand-target="নজরুল" data-brand-name="নজরুল">নজরুল</div>
         </div>
       </section>
 
@@ -1816,6 +1992,12 @@
       <a class="simple-help-btn call" href="tel:16793"><i data-lucide="phone" style="width:22px;height:22px"></i> কল করুন (১৬৭৯৩)</a>
       <button class="simple-help-btn msg" onclick="App.closeSimpleHelp()"><i data-lucide="message-circle" style="width:22px;height:22px"></i> মেসেজ করুন</button>
     </div>
+
+    <!-- ── Digital Bhai floating help button (Idea 2) ── -->
+    <button class="bhai-fab" id="bhai-fab" onclick="App.openBhai()" style="display:none" aria-label="Digital Bhai সাহায্য">
+      <span class="bhai-fab-dot"></span>
+      <i data-lucide="headset" style="width:26px;height:26px"></i>
+    </button>
 
     <!-- Passive editable-order status pill (floats above bottom nav, Home only) -->
     <div class="home-order-status" id="home-order-status" style="display:none" data-navigate="order-success">
