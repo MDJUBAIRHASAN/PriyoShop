@@ -32,6 +32,12 @@
     voice: { permission: false, items: [], transcript: '' },
     // Simple Mode (Idea 9).
     simpleMode: false,
+    // Spin-the-Wheel reward (Idea 4).
+    spin: { orders: 0, available: 0, justUnlocked: false, rotation: 0, spinning: false, lastPrize: null },
+    // Local Bazaar Community (Idea 3).
+    bazaar: { joined: false, challenges: {} },
+    // Digital Bhai support chat (Idea 2).
+    bhai: { messages: [], seeded: false },
     // App-exclusive reward system (Idea 8).
     rewards: {
       points: 2340,
@@ -57,6 +63,77 @@
     { name: 'Gold',     bn: 'গোল্ড',     min: 4000,  benefit: '২% ক্যাশব্যাক + ফ্রি ডেলিভারি' },
     { name: 'Platinum', bn: 'প্ল্যাটিনাম', min: 10000, benefit: '৩% ক্যাশব্যাক + অগ্রাধিকার সাপোর্ট' }
   ];
+
+  // ── Spin-the-Wheel (Idea 4) — ops-configurable ──
+  const SPIN_MILESTONE = 5;            // successful app orders per spin unlock
+  const SPIN_THEME = 'default';        // 'default' | 'festival'
+  // Guaranteed win (no lose state). weight = relative likelihood.
+  const SPIN_PRIZES = [
+    { type: 'cashback', value: 50,   label: '৳৫০ ক্যাশব্যাক',     color: '#E53935', weight: 3 },
+    { type: 'points',   value: 100,  label: '১০০ পয়েন্ট',        color: '#43A047', weight: 3 },
+    { type: 'cashback', value: 100,  label: '৳১০০ ক্যাশব্যাক',    color: '#FB8C00', weight: 2 },
+    { type: 'points',   value: 500,  label: '৫০০ পয়েন্ট 🎉',     color: '#1E88E5', weight: 2 },
+    { type: 'cashback', value: 250,  label: '৳২৫০ ক্যাশব্যাক',    color: '#8E24AA', weight: 1 },
+    { type: 'cashback', value: 500,  label: '🎁 মেগা ৳৫০০',       color: '#00897B', weight: 1 }
+  ];
+  const SPIN_PRIZES_FESTIVAL = [
+    { type: 'bonus',    value: 500,  label: 'ঈদ বোনাস ৫০০ পয়েন্ট', color: '#D81B60', weight: 2 },
+    { type: 'cashback', value: 150,  label: '৳১৫০ ক্যাশব্যাক',     color: '#E53935', weight: 3 },
+    { type: 'points',   value: 300,  label: '৩০০ পয়েন্ট',         color: '#43A047', weight: 3 },
+    { type: 'cashback', value: 250,  label: 'ঈদি ৳২৫০ ক্যাশব্যাক', color: '#1E88E5', weight: 2 },
+    { type: 'cashback', value: 300,  label: '৳৩০০ ক্যাশব্যাক',     color: '#FB8C00', weight: 1 },
+    { type: 'bonus',    value: 1000, label: '🎁 মেগা ১০০০ পয়েন্ট', color: '#6D4C41', weight: 1 }
+  ];
+  function activePrizes() { return SPIN_THEME === 'festival' ? SPIN_PRIZES_FESTIVAL : SPIN_PRIZES; }
+
+  // ── Local Bazaar Community (Idea 3) — mock community data ──
+  const BAZAAR_GROUP = { name: 'ধানমন্ডি বাজার', members: 42, myShop: 'Shahi General Store', myRank: 7, weekChange: 3 };
+  const BAZAAR_LEADERS = [
+    { rank: 1, name: 'রহমান স্টোর', area: 'ঝিগাতলা', score: 9850 },
+    { rank: 2, name: 'নিউ ভাই ভাই স্টোর', area: 'হাজারীবাগ', score: 9120 },
+    { rank: 3, name: 'মায়ের দোয়া স্টোর', area: 'ধানমন্ডি ১৫', score: 8740 },
+    { rank: 4, name: 'বিসমিল্লাহ ট্রেডার্স', area: 'রায়েরবাজার', score: 7980 },
+    { rank: 5, name: 'ভরসা জেনারেল স্টোর', area: 'শংকর', score: 7310 },
+    { rank: 6, name: 'আল-আমিন স্টোর', area: 'ধানমন্ডি ৭', score: 6620 },
+    { rank: 7, name: 'Shahi General Store', area: 'ধানমন্ডি ১২', score: 6180, me: true },
+    { rank: 8, name: 'সততা স্টোর', area: 'জিগাতলা', score: 5840 }
+  ];
+  const BAZAAR_BADGES = [
+    { label: 'ধারাবাহিক ক্রেতা', icon: 'flame', earned: true },
+    { label: 'টপ ডিজিটাল গ্রহণকারী', icon: 'smartphone', earned: true },
+    { label: 'নিয়মিত অর্ডারকারী', icon: 'calendar-check', earned: true },
+    { label: 'এলাকার চ্যাম্পিয়ন', icon: 'crown', earned: false },
+    { label: 'মেগা ক্রেতা', icon: 'trophy', earned: false },
+    { label: 'কমিউনিটি লিডার', icon: 'users', earned: false }
+  ];
+  const BAZAAR_CHALLENGES = [
+    { id: 'c1', label: 'এই সপ্তাহে ৫টি অর্ডার করুন', goal: 5, color: '#E53935', tracksOrders: true },
+    { id: 'c2', label: 'টানা ৩ দিন অ্যাপে অর্ডার করুন', goal: 3, base: 1, color: '#43A047' },
+    { id: 'c3', label: '৩ জন প্রতিবেশী দোকানকে রেফার করুন', goal: 3, base: 0, color: '#8E24AA' }
+  ];
+  const BAZAAR_CAMPAIGNS = [
+    { title: 'ধানমন্ডি বাজার ডিজিটাল ড্রাইভ', sub: 'অ্যাপে অর্ডার করে বাজারকে #১ বানান', icon: 'rocket' },
+    { title: 'ঈদ স্পেশাল বাজার অফার', sub: 'এই সপ্তাহে চাল-তেলে বিশেষ ছাড়', icon: 'party-popper' },
+    { title: 'নতুন দোকান স্বাগতম সপ্তাহ', sub: 'নতুন সদস্যদের জন্য বোনাস পয়েন্ট', icon: 'store' }
+  ];
+
+  // ── Digital Bhai (Idea 2) — a real agent persona ──
+  const BHAI_AGENT = { name: 'করিম ভাই', initial: 'ক', role: 'প্রিয়শপ সহকারী', sla: 'সাধারণত ২ মিনিটে উত্তর' };
+  const BHAI_QUICK = ['কীভাবে অর্ডার করব?', 'কার্ট এডিট করব কীভাবে?', 'চেকআউটে সাহায্য চাই', 'পেমেন্ট কীভাবে দেব?'];
+  function bhaiReply(text) {
+    const t = (text || '').toLowerCase();
+    if (/অর্ডার|order|কিনব|কিনবো/.test(t))
+      return "আচ্ছা ভাই, অর্ডার করা একদম সহজ — আমি বলে দিচ্ছি 🙂 প্রথমে হোম থেকে পণ্যটা খুঁজে '+' চাপুন, তারপর নিচের 'কার্ট'-এ গিয়ে 'চেকআউট' চাপলেই হবে। কোথাও আটকে গেলে আমাকে বলবেন, আমি আছি।";
+    if (/কার্ট|cart|এডিট|পরিমাণ|বাদ|মুছ/.test(t))
+      return "কোনো সমস্যা নেই ভাই। কার্টে প্রতিটা পণ্যের পাশে − আর + আছে, ওটা দিয়ে পরিমাণ কমান-বাড়ান। বাদ দিতে চাইলে পাশের ট্র্যাশ আইকনে চাপ দিন। টাকার হিসাব নিজে থেকেই ঠিক হয়ে যাবে।";
+    if (/চেকআউট|checkout|পেমেন্ট|payment|টাকা|বিল/.test(t))
+      return "ভয় পাবেন না ভাই 🙂 চেকআউটে ঠিকানা আর পেমেন্ট একবার দেখে নিয়ে লাল 'কনফার্ম অর্ডার' বাটনে চাপ দিন। ভুল হলেও চিন্তা নেই — ৩০ মিনিট পর্যন্ত বদলানো বা বাতিল করা যাবে।";
+    if (/ভয়েস|voice|নোট/.test(t))
+      return "জি ভাই, লিখতে অসুবিধা হলে নিচের মাইক বাটন চেপে কথা বলেই আমাকে পাঠাতে পারেন। আমি শুনে নেব।";
+    if (/ধন্যবাদ|thanks|থ্যাংক|ঠিক আছে|আচ্ছা/.test(t))
+      return "আরে ভাই, এটাই তো আমার কাজ! 🤝 আবার যেকোনো দরকারে এই বাটনে চাপ দিলেই আমি হাজির।";
+    return "জি ভাই, বলুন তো — অর্ডার করা, কার্ট ঠিক করা, নাকি চেকআউট নিয়ে সাহায্য লাগবে? আমি ধাপে ধাপে দেখিয়ে দিচ্ছি, চিন্তা করবেন না।";
+  }
 
   // ── Voice ordering (Idea 1) ──
   // Category keywords incl. dialect/colloquial + romanized variants.
@@ -154,9 +231,15 @@
 
   // ── SPA Router ──
   function navigateTo(screenId, addToHistory = true) {
+    // In Simple Mode, "home" always means the simplified hub.
+    if (state.simpleMode && screenId === 'home') screenId = 'simple-home';
     const screens = document.querySelectorAll('.screen');
     const current = document.querySelector('.screen.active');
     const target = document.getElementById('screen-' + screenId);
+
+    // Digital Bhai FAB: visible across journey, hidden on chat + Simple Mode.
+    const fab = document.getElementById('bhai-fab');
+    if (fab) fab.style.display = (screenId === 'bhai' || state.simpleMode) ? 'none' : 'flex';
 
     if (current && current === target) {
       target.classList.remove('slide-out');
@@ -209,6 +292,13 @@
       awardPointsForOrder();
       const rc = document.getElementById('home-reorder-card');
       if (rc) rc.style.display = 'flex';
+      // Spin milestone: count the order, unlock a spin every SPIN_MILESTONE orders.
+      state.spin.orders += 1;
+      if (state.spin.orders % SPIN_MILESTONE === 0) {
+        state.spin.available += 1;
+        state.spin.justUnlocked = true;
+      }
+      renderSpin();
     }
 
     if (screenId === 'order-success') {
@@ -218,6 +308,11 @@
         const t = state.rewards.tierJustUpgraded;
         setTimeout(() => showToast('অভিনন্দন! আপনি এখন ' + t.bn + ' টিয়ার — নতুন সুবিধা চালু হয়েছে।'), 900);
         state.rewards.tierJustUpgraded = null;
+      }
+      // Celebrate a freshly unlocked reward spin.
+      if (state.spin.justUnlocked) {
+        setTimeout(() => showToast('🎡 অভিনন্দন! রিওয়ার্ড স্পিন আনলক হয়েছে!'), 1400);
+        state.spin.justUnlocked = false;
       }
     }
 
@@ -258,7 +353,19 @@
       el.addEventListener('click', () => {
         const target = el.dataset.navigate;
 
-        if (el.dataset.categoryTarget) {
+        if (el.dataset.brandTarget) {
+            const key = el.dataset.brandTarget; // Bangla brand word
+            const titleEl = document.getElementById('all-products-title');
+            if (titleEl) titleEl.innerText = (el.dataset.brandName || key) + ' পণ্য';
+            document.querySelectorAll('#screen-all-products .product-card').forEach(card => {
+                const nm = card.querySelector('.product-name');
+                const name = nm ? nm.textContent.trim() : '';
+                // Exact brand: name starts with the brand word (excludes generic combos
+                // like "চিনি (ফ্রেশ/তীর/ইগলু)"). Ajinomoto variants (থাই/চাইনিজ/মেলা) match anywhere.
+                const match = name.indexOf(key) === 0 || (key === 'আজিনোমতো' && name.indexOf('আজিনোমতো') !== -1);
+                card.style.display = match ? 'block' : 'none';
+            });
+        } else if (el.dataset.categoryTarget) {
             const cat = el.dataset.categoryTarget;
             const nameEl = el.querySelector('.category-name');
             const title = nameEl ? nameEl.innerText : 'সকল পণ্য';
@@ -787,7 +894,7 @@
     // home floating status pill (passive; Home only)
     const pill = document.getElementById('home-order-status');
     if (pill) {
-      pill.style.display = (editable && state.currentScreen === 'home') ? 'flex' : 'none';
+      pill.style.display = (editable && (state.currentScreen === 'home' || state.currentScreen === 'simple-home')) ? 'flex' : 'none';
       setText('home-status-clock', fmtClock(ms));
       const bar = document.getElementById('home-status-progress');
       if (bar) bar.style.width = Math.max(0, (ms / (MODIFY_WINDOW_SECONDS * 1000)) * 100) + '%';
@@ -1184,6 +1291,8 @@
     // Order-success earned banner
     setText('points-earned-value', toBn(r.earnedThisOrder.toLocaleString()));
     setText('points-earned-balance', toBn(r.points.toLocaleString()));
+
+    renderSpin();
   }
 
   function setText(id, text) {
@@ -1570,6 +1679,310 @@
     });
   };
 
+  // ── Spin-the-Wheel (Idea 4) ──
+  function renderSpin() {
+    const prog = state.spin.orders % SPIN_MILESTONE;
+    const ready = state.spin.available > 0;
+    const bar = document.getElementById('spin-progress');
+    if (bar) bar.style.width = (ready ? 100 : (prog / SPIN_MILESTONE) * 100) + '%';
+    setText('spin-progress-label', ready
+      ? 'আপনার রিওয়ার্ড স্পিন প্রস্তুত!'
+      : 'পরবর্তী স্পিন আনলক করতে আর ' + toBn(SPIN_MILESTONE - prog) + 'টি অর্ডার করুন');
+    setText('spin-count', toBn(prog) + '/' + toBn(SPIN_MILESTONE));
+    setText('spin-available', ready ? toBn(state.spin.available) + 'টি স্পিন বাকি' : '');
+    const cta = document.getElementById('spin-cta');
+    if (cta) cta.classList.toggle('disabled', !ready);
+  }
+
+  function demoUnlockSpin() {
+    state.spin.available += 1;
+    renderSpin();
+    showToast('🎡 স্পিন আনলক হয়েছে');
+  }
+
+  function openSpin() {
+    if (state.spin.available <= 0) { showToast('আগে স্পিন আনলক করুন'); return; }
+    renderSpinWheel();
+    navigateTo('spin');
+  }
+
+  function renderSpinWheel() {
+    const wheel = document.getElementById('spin-wheel');
+    if (!wheel) return;
+    const prizes = activePrizes();
+    const seg = 360 / prizes.length;
+    const stops = prizes.map((p, i) => `${p.color} ${i * seg}deg ${(i + 1) * seg}deg`).join(', ');
+    wheel.style.background = `conic-gradient(${stops})`;
+    wheel.innerHTML = prizes.map((p, i) => {
+      const ang = i * seg + seg / 2;
+      return `<div class="spin-label" style="transform:rotate(${ang}deg)"><span>${p.label}</span></div>`;
+    }).join('');
+  }
+
+  function weightedPick(prizes) {
+    const total = prizes.reduce((s, p) => s + p.weight, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < prizes.length; i++) { r -= prizes[i].weight; if (r < 0) return i; }
+    return prizes.length - 1;
+  }
+
+  function doSpin() {
+    if (state.spin.spinning || state.spin.available <= 0) return;
+    state.spin.spinning = true;
+    const prizes = activePrizes();
+    const idx = weightedPick(prizes);
+    const seg = 360 / prizes.length;
+    const target = (360 - (idx * seg + seg / 2)) % 360; // bring segment center under top pointer
+    const base = Math.ceil(state.spin.rotation / 360) * 360;
+    const final = base + 360 * 5 + target;
+    state.spin.rotation = final;
+    const wheel = document.getElementById('spin-wheel');
+    if (wheel) wheel.style.transform = `rotate(${final}deg)`;
+    setTimeout(() => finishSpin(prizes[idx]), 4300);
+  }
+
+  function finishSpin(prize) {
+    state.spin.spinning = false;
+    state.spin.available -= 1;
+    applyPrize(prize);
+    renderSpin();
+    triggerConfetti('spin');
+    setText('spin-result-prize', prize.label);
+    const overlay = document.getElementById('spin-result');
+    if (overlay) overlay.classList.add('open');
+  }
+
+  function applyPrize(p) {
+    const r = state.rewards;
+    if (p.type === 'cashback') {
+      r.voucher = { amount: p.value };
+    } else if (p.type === 'points' || p.type === 'bonus') {
+      r.points += p.value;
+      r.lifetime += p.value;
+      r.history.unshift({ label: 'স্পিন রিওয়ার্ড', points: p.value, date: todayBn() });
+    } else if (p.type === 'delivery') {
+      showToast('ফ্রি ডেলিভারি রিওয়ার্ড যোগ হয়েছে');
+    }
+    renderRewards();
+  }
+
+  function closeSpinResult() {
+    const overlay = document.getElementById('spin-result');
+    if (overlay) overlay.classList.remove('open');
+    navigateTo('offer-points');
+  }
+
+  // ── Local Bazaar Community (Idea 3) ──
+  function openBazaar() { renderBazaar(); navigateTo('bazaar'); }
+
+  function joinBazaar() {
+    state.bazaar.joined = true;
+    showToast('আপনি ' + BAZAAR_GROUP.name + ' কমিউনিটিতে যোগ দিয়েছেন!');
+    renderBazaar();
+  }
+
+  function joinChallenge(id) {
+    state.bazaar.challenges[id] = true;
+    showToast('চ্যালেঞ্জে অংশগ্রহণ নিশ্চিত হয়েছে');
+    renderBazaar();
+  }
+
+  function challengeProgress(c) {
+    if (c.tracksOrders) return Math.min(state.spin.orders, c.goal);
+    return Math.min((c.base || 0) + (state.bazaar.challenges[c.id] ? 1 : 0), c.goal);
+  }
+
+  function renderBazaar() {
+    const join = document.getElementById('bazaar-join');
+    const dash = document.getElementById('bazaar-dashboard');
+    if (join) join.style.display = state.bazaar.joined ? 'none' : 'block';
+    if (dash) dash.style.display = state.bazaar.joined ? 'block' : 'none';
+
+    setText('bazaar-join-name', BAZAAR_GROUP.name);
+    setText('bazaar-join-members', toBn(BAZAAR_GROUP.members));
+    setText('bazaar-group-name', BAZAAR_GROUP.name + ' কমিউনিটি');
+    setText('bazaar-members-count', toBn(BAZAAR_GROUP.members) + ' জন রিটেইলার');
+    setText('bazaar-rank', '#' + toBn(BAZAAR_GROUP.myRank));
+    setText('bazaar-rank-shop', BAZAAR_GROUP.myShop);
+    setText('bazaar-rank-change', '↑' + toBn(BAZAAR_GROUP.weekChange) + ' এই সপ্তাহে');
+
+    const lead = document.getElementById('bazaar-leaders');
+    if (lead) lead.innerHTML = BAZAAR_LEADERS.map(l => {
+      const medal = l.rank <= 3 ? ['🥇', '🥈', '🥉'][l.rank - 1] : toBn(l.rank);
+      return `<div class="bazaar-leader-row${l.me ? ' me' : ''}">
+        <span class="bz-rank">${medal}</span>
+        <div class="bz-leader-info"><div class="bz-leader-name">${l.name}${l.me ? ' (আপনি)' : ''}</div><div class="bz-leader-area">${l.area}</div></div>
+        <span class="bz-score">${toBn(l.score.toLocaleString())}</span>
+      </div>`;
+    }).join('');
+
+    const bg = document.getElementById('bazaar-badges');
+    if (bg) bg.innerHTML = BAZAAR_BADGES.map(b => `
+      <div class="bazaar-badge${b.earned ? ' earned' : ' locked'}">
+        <i data-lucide="${b.earned ? b.icon : 'lock'}"></i><span>${b.label}</span>
+      </div>`).join('');
+
+    const ch = document.getElementById('bazaar-challenges');
+    if (ch) ch.innerHTML = BAZAAR_CHALLENGES.map(c => {
+      const prog = challengeProgress(c);
+      const pct = Math.round((prog / c.goal) * 100);
+      const joined = c.tracksOrders || state.bazaar.challenges[c.id];
+      return `<div class="bazaar-challenge">
+        <div class="bz-ch-top"><span class="bz-ch-label">${c.label}</span><span class="bz-ch-count">${toBn(prog)}/${toBn(c.goal)}</span></div>
+        <div class="bz-ch-track"><div class="bz-ch-fill" style="width:${pct}%;background:${c.color}"></div></div>
+        ${joined
+          ? '<div class="bz-ch-joined"><i data-lucide="check" style="width:13px;height:13px"></i> অংশগ্রহণ করছেন</div>'
+          : `<button class="bz-ch-btn" onclick="App.joinChallenge('${c.id}')">অংশগ্রহণ করুন</button>`}
+      </div>`;
+    }).join('');
+
+    const cp = document.getElementById('bazaar-campaigns');
+    if (cp) cp.innerHTML = BAZAAR_CAMPAIGNS.map(c => `
+      <div class="bazaar-campaign">
+        <div class="bz-camp-icon"><i data-lucide="${c.icon}" style="width:20px;height:20px"></i></div>
+        <div><div class="bz-camp-title">${c.title}</div><div class="bz-camp-sub">${c.sub}</div></div>
+      </div>`).join('');
+
+    refreshIcons();
+  }
+
+  // ── Digital Bhai chat (Idea 2) ──
+  function openBhai() {
+    navigateTo('bhai');
+    if (!state.bhai.seeded) {
+      state.bhai.seeded = true;
+      // Simulate connecting to a real agent, then a warm greeting.
+      state.bhai.messages.push({ from: 'system', text: 'আপনাকে একজন সহকারীর সাথে যুক্ত করা হচ্ছে…' });
+      renderBhai();
+      setTimeout(() => {
+        state.bhai.messages.push({ from: 'system', text: BHAI_AGENT.name + ' চ্যাটে যুক্ত হয়েছেন' });
+        renderBhai();
+        bhaiTypeThen('আসসালামু আলাইকুম ভাই! আমি ' + BHAI_AGENT.name.replace(' ভাই', '') + ', প্রিয়শপ থেকে। 🙂 চিন্তা করবেন না, আমি আপনার সাথেই আছি। কী নিয়ে সাহায্য লাগবে বলুন তো?', 1200);
+      }, 1000);
+    } else {
+      renderBhai();
+    }
+  }
+
+  function pushBhai(from, text, isVoice) {
+    state.bhai.messages.push({ from, text, voice: !!isVoice });
+    renderBhai();
+  }
+
+  // Show a typing indicator, then deliver the agent message.
+  function bhaiTypeThen(text, delay) {
+    state.bhai.typing = true;
+    renderBhai();
+    setTimeout(() => {
+      state.bhai.typing = false;
+      state.bhai.messages.push({ from: 'agent', text });
+      renderBhai();
+    }, delay || 1100);
+  }
+
+  // Agent replies with a spoken (voice) message — for retailers who can't read.
+  function bhaiVoiceReplyThen(text, delay) {
+    state.bhai.typing = true;
+    renderBhai();
+    setTimeout(() => {
+      state.bhai.typing = false;
+      state.bhai.messages.push({ from: 'agent', text, voiceReply: true });
+      renderBhai();
+      speakBn(text); // auto-play once
+    }, delay || 1600);
+  }
+
+  // Bangla text-to-speech (browser); silent fallback if unsupported.
+  function speakBn(text) {
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'bn-BD';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* ignore */ }
+  }
+
+  function playBhaiVoice(i) {
+    const m = state.bhai.messages[i];
+    if (m) speakBn(m.text);
+  }
+
+  // Simulated voice call with the agent.
+  function callBhai() {
+    const ov = document.getElementById('bhai-call');
+    if (!ov) return;
+    ov.classList.add('open');
+    setText('bhai-call-status', 'কল করা হচ্ছে…');
+    setText('bhai-call-timer', '');
+    clearInterval(state.bhai.callTimer);
+    let s = 0;
+    setTimeout(() => {
+      setText('bhai-call-status', '🟢 সংযুক্ত');
+      state.bhai.callTimer = setInterval(() => {
+        s++;
+        const m = Math.floor(s / 60), sec = s % 60;
+        setText('bhai-call-timer', toBn(String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0')));
+      }, 1000);
+    }, 1600);
+    refreshIcons();
+  }
+
+  function endBhaiCall() {
+    clearInterval(state.bhai.callTimer);
+    const ov = document.getElementById('bhai-call');
+    if (ov) ov.classList.remove('open');
+  }
+
+  function sendBhaiText() {
+    const input = document.getElementById('bhai-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    pushBhai('user', text);
+    bhaiTypeThen(bhaiReply(text), 1100);
+  }
+
+  function sendBhaiQuick(text) {
+    pushBhai('user', text);
+    bhaiTypeThen(bhaiReply(text), 1100);
+  }
+
+  function sendBhaiVoice() {
+    pushBhai('user', '🎤 ভয়েস নোট · ০:০৫', true);
+    // Reply by voice too, since the retailer chose to speak (may not read well).
+    bhaiVoiceReplyThen('জি ভাই, আপনার কথা শুনলাম। ' + bhaiReply('অর্ডার'), 1600);
+  }
+
+  function renderBhai() {
+    setText('bhai-status', '🟢 অনলাইন · ' + BHAI_AGENT.sla);
+    const list = document.getElementById('bhai-messages');
+    if (list) {
+      let html = state.bhai.messages.map((m, i) => {
+        if (m.from === 'system') return `<div class="bhai-system">${m.text}</div>`;
+        if (m.voiceReply) {
+          return `<div class="bhai-msg agent bhai-voicereply" onclick="App.playBhaiVoice(${i})">
+            <button class="bhai-play"><i data-lucide="volume-2" style="width:18px;height:18px;pointer-events:none"></i></button>
+            <div class="bhai-voicereply-body"><span class="bhai-voicereply-label">🔊 ভয়েস উত্তর — শুনতে চাপুন</span><span class="bhai-voicereply-text">${m.text}</span></div>
+          </div>`;
+        }
+        return `<div class="bhai-msg ${m.from}">${m.voice ? '<i data-lucide="mic" style="width:14px;height:14px;vertical-align:middle"></i> ' : ''}${m.text}</div>`;
+      }).join('');
+      if (state.bhai.typing) {
+        html += `<div class="bhai-typing"><span class="bhai-typing-name">${BHAI_AGENT.name} লিখছেন</span><span class="bhai-dots"><i></i><i></i><i></i></span></div>`;
+      }
+      list.innerHTML = html;
+      list.scrollTop = list.scrollHeight;
+    }
+    const quick = document.getElementById('bhai-quick');
+    if (quick) {
+      quick.innerHTML = BHAI_QUICK.map(q => `<button class="bhai-chip" onclick="App.sendBhaiQuick('${q}')">${q}</button>`).join('');
+    }
+    refreshIcons();
+  }
+
   // ── Simple Mode (Idea 9) ──
   const SIMPLE_KEY = 'priyoshop_simple_mode';
 
@@ -1661,7 +2074,21 @@
     setSimpleMode,
     toggleSimpleMode,
     openSimpleHelp,
-    closeSimpleHelp
+    closeSimpleHelp,
+    openSpin,
+    doSpin,
+    demoUnlockSpin,
+    closeSpinResult,
+    openBazaar,
+    joinBazaar,
+    joinChallenge,
+    openBhai,
+    sendBhaiText,
+    sendBhaiQuick,
+    sendBhaiVoice,
+    playBhaiVoice,
+    callBhai,
+    endBhaiCall
   };
 
 })();
