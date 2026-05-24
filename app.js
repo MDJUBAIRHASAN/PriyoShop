@@ -216,6 +216,13 @@
     adjustScale();
     window.addEventListener('resize', adjustScale);
     navigateTo(state.simpleMode ? 'simple-home' : 'home');
+
+    // Intro splash → fade out after a short brand moment.
+    const splash = document.getElementById('app-splash');
+    if (splash) {
+      setTimeout(() => splash.classList.add('hide'), 2200);
+      setTimeout(() => { splash.style.display = 'none'; }, 2900);
+    }
   }
 
   // ── Responsive Scaling ──
