@@ -101,13 +101,13 @@
  { rank: 7, name: 'Shahi General Store', area: 'ধানমন্ডি ১২', score: 6180, me: true },
  { rank: 8, name: 'সততা স্টোর', area: 'জিগাতলা', score: 5840 }
  ];
+ // Retailer's prior self-serve app orders (demo seed); session orders add on top.
+ const BADGE_BASE_ORDERS = 11;
  const BAZAAR_BADGES = [
- { label: 'ধারাবাহিক ক্রেতা', icon: 'flame', earned: true },
- { label: 'টপ ডিজিটাল গ্রহণকারী', icon: 'smartphone', earned: true },
- { label: 'নিয়মিত অর্ডারকারী', icon: 'calendar-check', earned: true },
- { label: 'এলাকার চ্যাম্পিয়ন', icon: 'crown', earned: false },
- { label: 'মেগা ক্রেতা', icon: 'trophy', earned: false },
- { label: 'কমিউনিটি লিডার', icon: 'users', earned: false }
+ { label: 'স্মার্ট রিটেইলার', icon: 'sparkles', orders: 3, req: 'প্রথম ৩টি নিজে দেওয়া অর্ডার' },
+ { label: 'ডিজিটাল দোকানদার', icon: 'smartphone', orders: 10, req: 'মোট ১০টি অ্যাপ অর্ডার' },
+ { label: 'গোল্ড রিটেইল পার্টনার', icon: 'medal', orders: 30, req: '৩০টি অর্ডার + সময়মতো পেমেন্ট' },
+ { label: 'বাজার চ্যাম্পিয়ন', icon: 'crown', topArea: true, req: 'এলাকার সেরা ৩ রিটেইলার' }
  ];
  const BAZAAR_CHALLENGES = [
  { id: 'c1', label: 'এই সপ্তাহে ৫টি অর্ডার করুন', goal: 5, color: '#E53935', tracksOrders: true },
@@ -1782,6 +1782,12 @@
  }
 
  // ── Local Bazaar Community (Idea 3) ──
+ function totalAppOrders() { return BADGE_BASE_ORDERS + state.spin.orders; }
+ function badgeEarned(b) {
+ if (b.topArea) return BAZAAR_GROUP.myRank <= 3;
+ return totalAppOrders() >= b.orders;
+ }
+
  function openBazaar() { renderBazaar(); navigateTo('bazaar'); }
 
  function joinBazaar() {
@@ -1826,10 +1832,12 @@
  }).join('');
 
  const bg = document.getElementById('bazaar-badges');
- if (bg) bg.innerHTML = BAZAAR_BADGES.map(b => `
- <div class="bazaar-badge${b.earned? ' earned' : ' locked'}">
- <i data-lucide="${b.earned? b.icon : 'lock'}"></i><span>${b.label}</span>
- </div>`).join('');
+ if (bg) bg.innerHTML = BAZAAR_BADGES.map(b => {
+ const e = badgeEarned(b);
+ return `<div class="bazaar-badge${e? ' earned' : ' locked'}" title="${b.req}">
+ <i data-lucide="${e? b.icon : 'lock'}"></i><span>${b.label}</span>
+ </div>`;
+ }).join('');
 
  const ch = document.getElementById('bazaar-challenges');
  if (ch) ch.innerHTML = BAZAAR_CHALLENGES.map(c => {
