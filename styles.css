@@ -583,46 +583,81 @@ body {
 }
 
 .carousel-slide {
+  position: relative;
   min-width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
+  justify-content: space-between;
+  padding: 18px 20px;
   color: var(--white);
   font-weight: 700;
-  font-size: 16px;
   text-align: left;
-  line-height: 1.4;
+  line-height: 1.35;
+  overflow: hidden;
 }
 
-.carousel-slide:nth-child(1) {
-  background: linear-gradient(135deg, #1B5E20, #2E7D32);
+/* Rich brand gradients */
+.slide-rice  { background: linear-gradient(120deg, #14532D 0%, #2E7D32 55%, #43A047 100%); }
+.slide-offer { background: linear-gradient(120deg, #7F1D1D 0%, #C62828 55%, #EF5350 100%); }
+.slide-new   { background: linear-gradient(120deg, #0D47A1 0%, #1565C0 55%, #42A5F5 100%); }
+
+/* Decorative soft blobs */
+.slide-blob {
+  position: absolute; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  filter: blur(2px); pointer-events: none;
 }
-.carousel-slide:nth-child(2) {
-  background: linear-gradient(135deg, #E53935, #C62828);
-}
-.carousel-slide:nth-child(3) {
-  background: linear-gradient(135deg, #1565C0, #0D47A1);
-}
+.slide-blob-a { width: 150px; height: 150px; top: -50px; right: 30px; }
+.slide-blob-b { width: 90px; height: 90px; bottom: -36px; right: 120px; background: rgba(255,255,255,0.08); }
 
 .carousel-slide-content {
-  flex: 1;
+  position: relative; z-index: 2;
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 7px;
 }
-
+.slide-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 3px 9px; border-radius: 100px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
 .carousel-slide-content h3 {
-  font-size: 17px;
-  margin-bottom: 4px;
+  font-size: 16px; font-weight: 700; line-height: 1.3;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+  margin: 0;
 }
-
-.carousel-slide-content p {
-  font-size: 12px;
-  opacity: 0.9;
+.slide-cta {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 700;
+  padding: 6px 13px; border-radius: 100px;
+  background: rgba(255, 255, 255, 0.95); color: #1c1c1e;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 .carousel-slide-image {
   font-size: 50px;
   margin-left: 12px;
+}
+
+.carousel-slide-icon {
+  position: relative; z-index: 2;
+  flex-shrink: 0;
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  margin-left: 14px;
+}
+.carousel-slide-icon i { width: 32px; height: 32px; color: #fff; }
+/* Oversized faint watermark icon behind */
+.carousel-slide-icon::before {
+  content: '';
+  position: absolute; right: -34px; bottom: -34px;
+  width: 120px; height: 120px; z-index: -1;
+  opacity: 0;
 }
 
 .carousel-dots {
