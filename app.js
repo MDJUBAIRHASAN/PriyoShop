@@ -1845,8 +1845,28 @@
  const bg = document.getElementById('bazaar-badges');
  if (bg) bg.innerHTML = BAZAAR_BADGES.map(b => {
  const e = badgeEarned(b);
- return `<div class="bazaar-badge${e? ' earned' : ' locked'}" title="${b.req}">
- <i data-lucide="${e? b.icon : 'lock'}"></i><span>${b.label}</span>
+ const total = totalAppOrders();
+ let progress = '';
+ let flag;
+ if (e) {
+ flag = 'অর্জিত';
+ } else if (b.topArea) {
+ flag = 'এখন #' + toBn(BAZAAR_GROUP.myRank);
+ } else {
+ const left = b.orders - total;
+ flag = 'আর ' + toBn(left) + 'টি';
+ const pct = Math.min(100, Math.round((total / b.orders) * 100));
+ progress = `<div class="bz-badge-track"><div class="bz-badge-fill" style="width:${pct}%"></div></div>
+ <div class="bz-badge-count">${toBn(total)}/${toBn(b.orders)} অর্ডার</div>`;
+ }
+ return `<div class="bazaar-badge${e? ' earned' : ' locked'}">
+ <div class="bz-badge-icon"><i data-lucide="${e? b.icon : 'lock'}"></i></div>
+ <div class="bz-badge-text">
+ <div class="bz-badge-name">${b.label}</div>
+ <div class="bz-badge-req">${b.req}</div>
+ ${progress}
+ </div>
+ <span class="bz-badge-flag">${flag}</span>
  </div>`;
  }).join('');
 
