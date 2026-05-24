@@ -4803,7 +4803,16 @@ body {
 .bz-rank-label { font-size: 12px; opacity: 0.85; margin-top: 2px; }
 .bz-rank-change { font-size: 12.5px; font-weight: 700; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 12px; }
 
-.bazaar-section-title { font-size: 15px; font-weight: 700; margin: 18px 16px 10px; }
+.bazaar-section-title { font-size: 15px; font-weight: 700; margin: 18px 16px 10px; display: flex; align-items: center; gap: 7px; }
+.bazaar-section-title i { color: var(--primary); }
+.bz-rank.top1 { color: #D4AF37; }
+.bz-rank.top2 { color: #9AA3AD; }
+.bz-rank.top3 { color: #C97B4A; }
+.bhai-online-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #2ECC71;
+  display: inline-block; margin-right: 5px; vertical-align: middle;
+  box-shadow: 0 0 6px rgba(46,204,113,0.7);
+}
 
 .bazaar-leader-row {
   display: flex; align-items: center; gap: 12px;
