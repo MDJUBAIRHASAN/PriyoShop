@@ -4856,7 +4856,13 @@ body {
 .bazaar-leader-row.me { background: var(--accent-pink-pale); border-left: 3px solid var(--primary); }
 .bz-rank { width: 28px; text-align: center; font-size: 16px; font-weight: 700; font-family: var(--font-en); flex-shrink: 0; }
 .bz-leader-info { flex: 1; min-width: 0; }
-.bz-leader-name { font-size: 14px; font-weight: 600; }
+.bz-leader-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+.bz-leader-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent-pink-pale); color: var(--primary); flex-shrink: 0;
+}
+.bz-leader-badge i { width: 11px; height: 11px; }
 .bz-leader-area { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
 .bz-score { font-size: 13px; font-weight: 700; color: var(--primary); font-family: var(--font-en); }
 

@@ -1788,6 +1788,13 @@
  return totalAppOrders() >= b.orders;
  }
 
+ // Highest badge a leaderboard retailer holds (social proof / motivation).
+ function leaderBadge(l) {
+ if (l.rank <= 2) return { icon: 'crown', label: 'বাজার চ্যাম্পিয়ন' };
+ if (l.rank <= 5) return { icon: 'medal', label: 'গোল্ড রিটেইল পার্টনার' };
+ return { icon: 'smartphone', label: 'ডিজিটাল দোকানদার' };
+ }
+
  function openBazaar() { renderBazaar(); navigateTo('bazaar'); }
 
  function joinBazaar() {
@@ -1824,9 +1831,13 @@
  const lead = document.getElementById('bazaar-leaders');
  if (lead) lead.innerHTML = BAZAAR_LEADERS.map(l => {
  const topClass = l.rank <= 3? ' top' + l.rank : '';
+ const b = leaderBadge(l);
  return `<div class="bazaar-leader-row${l.me? ' me' : ''}">
  <span class="bz-rank${topClass}">${toBn(l.rank)}</span>
- <div class="bz-leader-info"><div class="bz-leader-name">${l.name}${l.me? ' (আপনি)' : ''}</div><div class="bz-leader-area">${l.area}</div></div>
+ <div class="bz-leader-info">
+ <div class="bz-leader-name">${l.name}${l.me? ' (আপনি)' : ''}<span class="bz-leader-badge" title="${b.label}"><i data-lucide="${b.icon}"></i></span></div>
+ <div class="bz-leader-area">${l.area}</div>
+ </div>
  <span class="bz-score">${toBn(l.score.toLocaleString())}</span>
  </div>`;
  }).join('');
