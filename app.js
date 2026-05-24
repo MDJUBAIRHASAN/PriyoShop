@@ -104,7 +104,7 @@
  // Retailer's prior self-serve app orders (demo seed); session orders add on top.
  const BADGE_BASE_ORDERS = 11;
  const BAZAAR_BADGES = [
- { label: 'স্মার্ট রিটেইলার', icon: 'sparkles', orders: 3, req: 'প্রথম ৩টি নিজে দেওয়া অর্ডার' },
+ { label: 'স্মার্ট রিটেইলার', icon: 'badge-check', orders: 3, req: 'প্রথম ৩টি নিজে দেওয়া অর্ডার' },
  { label: 'ডিজিটাল দোকানদার', icon: 'smartphone', orders: 10, req: 'মোট ১০টি অ্যাপ অর্ডার' },
  { label: 'গোল্ড রিটেইল পার্টনার', icon: 'medal', orders: 30, req: '৩০টি অর্ডার + সময়মতো পেমেন্ট' },
  { label: 'বাজার চ্যাম্পিয়ন', icon: 'crown', topArea: true, req: 'এলাকার সেরা ৩ রিটেইলার' }
@@ -1788,11 +1788,18 @@
  return totalAppOrders() >= b.orders;
  }
 
- // Highest badge a leaderboard retailer holds (social proof / motivation).
- function leaderBadge(l) {
- if (l.rank <= 2) return { icon: 'crown', label: 'বাজার চ্যাম্পিয়ন' };
- if (l.rank <= 5) return { icon: 'medal', label: 'গোল্ড রিটেইল পার্টনার' };
- return { icon: 'smartphone', label: 'ডিজিটাল দোকানদার' };
+ // All badges a leaderboard retailer holds (cumulative — social proof / motivation).
+ function leaderBadges(l) {
+ const all = [
+ { icon: 'badge-check', label: 'স্মার্ট রিটেইলার', key: 'smart', short: 'স্মার্ট রিটেইলার' },
+ { icon: 'smartphone', label: 'ডিজিটাল দোকানদার', key: 'digital', short: 'ডিজিটাল দোকানদার' },
+ { icon: 'medal', label: 'গোল্ড রিটেইল পার্টনার', key: 'gold', short: 'গোল্ড রিটেইল পার্টনার' },
+ { icon: 'crown', label: 'বাজার চ্যাম্পিয়ন', key: 'champion', short: 'বাজার চ্যাম্পিয়ন' }
+ ];
+ let level = 2; // rank 6-8: smart + digital dokandar
+ if (l.rank <= 2) level = 4; // + gold + champion
+ else if (l.rank <= 5) level = 3; // + gold
+ return all.slice(0, level);
  }
 
  function openBazaar() { renderBazaar(); navigateTo('bazaar'); }
@@ -1831,12 +1838,12 @@
  const lead = document.getElementById('bazaar-leaders');
  if (lead) lead.innerHTML = BAZAAR_LEADERS.map(l => {
  const topClass = l.rank <= 3? ' top' + l.rank : '';
- const b = leaderBadge(l);
+ const top = leaderBadges(l).at(-1);
  return `<div class="bazaar-leader-row${l.me? ' me' : ''}">
  <span class="bz-rank${topClass}">${toBn(l.rank)}</span>
  <div class="bz-leader-info">
- <div class="bz-leader-name">${l.name}${l.me? ' (আপনি)' : ''}<span class="bz-leader-badge" title="${b.label}"><i data-lucide="${b.icon}"></i></span></div>
- <div class="bz-leader-area">${l.area}</div>
+ <div class="bz-leader-name">${l.name}${l.me? ' (আপনি)' : ''}</div>
+ <div class="bz-leader-area">${l.area} · <span class="bz-top-badge bz-tb-${top.key}"><i data-lucide="${top.icon}" style="width:10px;height:10px"></i>${top.short}</span></div>
  </div>
  <span class="bz-score">${toBn(l.score.toLocaleString())}</span>
  </div>`;
@@ -1860,7 +1867,7 @@
  <div class="bz-badge-count">${toBn(total)}/${toBn(b.orders)} অর্ডার</div>`;
  }
  return `<div class="bazaar-badge${e? ' earned' : ' locked'}">
- <div class="bz-badge-icon"><i data-lucide="${e? b.icon : 'lock'}"></i></div>
+ <div class="bz-badge-icon"><i data-lucide="${b.icon}"></i>${e? '' : '<span class="bz-badge-lock"><i data-lucide="lock"></i></span>'}</div>
  <div class="bz-badge-text">
  <div class="bz-badge-name">${b.label}</div>
  <div class="bz-badge-req">${b.req}</div>

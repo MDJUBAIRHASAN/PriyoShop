@@ -4857,13 +4857,17 @@ body {
 .bz-rank { width: 28px; text-align: center; font-size: 16px; font-weight: 700; font-family: var(--font-en); flex-shrink: 0; }
 .bz-leader-info { flex: 1; min-width: 0; }
 .bz-leader-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-.bz-leader-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--accent-pink-pale); color: var(--primary); flex-shrink: 0;
+.bz-top-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
 }
-.bz-leader-badge i { width: 11px; height: 11px; }
-.bz-leader-area { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+.bz-top-badge i, .bz-top-badge svg { display: block; flex-shrink: 0; }
+.bz-tb-smart    { background: #E3F2FD; color: #1565C0; }
+.bz-tb-digital  { background: #E8F5E9; color: #2E7D32; }
+.bz-tb-gold     { background: #FFF8E1; color: #E65100; }
+.bz-tb-champion { background: #FCE4EC; color: #C62828; }
+.bz-leader-area { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
 .bz-score { font-size: 13px; font-weight: 700; color: var(--primary); font-family: var(--font-en); }
 
 .bazaar-badges { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
@@ -4873,10 +4877,18 @@ body {
   border: 1px solid var(--border-light);
 }
 .bz-badge-icon {
+  position: relative;
   width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
 .bz-badge-icon i { width: 22px; height: 22px; }
+.bz-badge-lock {
+  position: absolute; right: -2px; bottom: -2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #90A4AE; color: #fff; border: 2px solid #FAFAFA;
+  display: flex; align-items: center; justify-content: center;
+}
+.bz-badge-lock i { width: 9px; height: 9px; }
 .bz-badge-text { flex: 1; min-width: 0; }
 .bz-badge-name { font-size: 14px; font-weight: 700; line-height: 1.3; }
 .bz-badge-req { font-size: 11.5px; line-height: 1.35; margin-top: 2px; color: var(--text-secondary); }
