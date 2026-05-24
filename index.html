@@ -168,7 +168,7 @@
         <!-- Banner Carousel -->
         <div class="banner-carousel">
           <div class="carousel-track">
-            <div class="carousel-slide slide-rice">
+            <div class="carousel-slide slide-rice" data-navigate="all-products" data-category-target="rice">
               <span class="slide-blob slide-blob-a"></span>
               <span class="slide-blob slide-blob-b"></span>
               <div class="carousel-slide-content">
@@ -178,7 +178,7 @@
               </div>
               <div class="carousel-slide-icon"><i data-lucide="wheat"></i></div>
             </div>
-            <div class="carousel-slide slide-offer">
+            <div class="carousel-slide slide-offer" data-navigate="all-products" data-category-target="oil">
               <span class="slide-blob slide-blob-a"></span>
               <span class="slide-blob slide-blob-b"></span>
               <div class="carousel-slide-content">
@@ -188,7 +188,7 @@
               </div>
               <div class="carousel-slide-icon"><i data-lucide="badge-percent"></i></div>
             </div>
-            <div class="carousel-slide slide-new">
+            <div class="carousel-slide slide-new" data-navigate="all-products">
               <span class="slide-blob slide-blob-a"></span>
               <span class="slide-blob slide-blob-b"></span>
               <div class="carousel-slide-content">
@@ -875,6 +875,16 @@
             Net Weight: 25... <span class="product-description-link">সম্পূর্ণ দেখুন</span>
           </p>
         </div>
+        <div class="product-detail-bottom-bar">
+          <div class="qty-selector">
+            <button class="qty-btn" onclick="App.detailChangeQty(-1)"><i data-lucide="minus" style="width:14px;height:14px;pointer-events:none"></i></button>
+            <span class="qty-value" id="detail-qty">১</span>
+            <button class="qty-btn" onclick="App.detailChangeQty(1)"><i data-lucide="plus" style="width:14px;height:14px;pointer-events:none"></i></button>
+          </div>
+          <button class="view-cart-btn" onclick="App.detailAddToCart()">
+            <i data-lucide="shopping-cart" style="width:18px;height:18px"></i> কার্টে যোগ করুন
+          </button>
+        </div>
         <div class="section-header">
           <h2 class="section-title">আপনি আরও কিনতে পারেন</h2>
         </div>
@@ -903,16 +913,6 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="product-detail-bottom-bar">
-          <div class="qty-selector">
-            <button class="qty-btn" onclick="App.detailChangeQty(-1)"><i data-lucide="minus" style="width:14px;height:14px;pointer-events:none"></i></button>
-            <span class="qty-value" id="detail-qty">১</span>
-            <button class="qty-btn" onclick="App.detailChangeQty(1)"><i data-lucide="plus" style="width:14px;height:14px;pointer-events:none"></i></button>
-          </div>
-          <button class="view-cart-btn" onclick="App.detailAddToCart()">
-            <i data-lucide="shopping-cart" style="width:18px;height:18px"></i> কার্টে যোগ করুন
-          </button>
         </div>
       </section>
 

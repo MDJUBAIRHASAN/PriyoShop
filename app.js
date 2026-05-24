@@ -1890,7 +1890,9 @@
  }
 
  // Agent replies with a spoken (voice) message — for retailers who can't read.
- function bhaiVoiceReplyThen(text, delay) {
+ // `text` = Bangla shown in bubble; `speak` = romanized line the (English) male
+ // voice can actually pronounce (browsers have no Bangla male voice).
+ function bhaiVoiceReplyThen(text, speak, delay) {
  state.bhai.typing = true;
  renderBhai();
  setTimeout(() => {
@@ -1901,7 +1903,7 @@
  }, delay || 1600);
  }
 
- // Bangla text-to-speech (browser); silent fallback if unsupported.
+
  function speakBn(text) {
  try {
  if (!window.speechSynthesis) return;
@@ -1962,7 +1964,7 @@
  function sendBhaiVoice() {
  pushBhai('user', ' ভয়েস নোট· ০:০৫', true);
  // Reply by voice too, since the retailer chose to speak (may not read well).
- bhaiVoiceReplyThen('জি ভাই, আপনার কথা শুনলাম। ' + bhaiReply('অর্ডার'), 1600);
+ bhaiVoiceReplyThen('জি ভাই, আপনার কথা শুনলাম। ' + bhaiReply('অর্ডার'), null, 1600);
  }
 
  function renderBhai() {
