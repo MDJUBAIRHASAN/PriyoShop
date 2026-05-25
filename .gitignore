@@ -1,2 +1,12 @@
 # Local Netlify folder
 .netlify
+
+# macOS metadata
+.DS_Store
+
+# Presentation source/build scratch
+presentation-structure 2/
+presentation-structure.zip
+node_modules/
+.next/
+out/
